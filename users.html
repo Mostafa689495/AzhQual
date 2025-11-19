@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستخدمون - نظام مراجعة الوثائق</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #f43f5e;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: var(--light);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        /* Simplified Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .main-container {
+            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            color: var(--dark);
+            font-size: 1.5rem;
+        }
+
+        /* Users View Styles */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+            transition: opacity 0.3s ease;
+        }
+
+        /* تحديث تصميم بطاقة المستخدم */
+        .user-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .user-info {
+            flex: 1;
+            min-width: 0; /* Allows text truncation to work */
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .user-info h3 {
+            color: var(--dark);
+            font-size: 1.3rem;
+            margin-bottom: 0.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info p {
+            color: var(--gray);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.1rem 0;
+        }
+
+        .user-info p i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .user-info .institute-name {
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* تحديث تصميم الإحصائيات */
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* تغيير إلى عمودين فقط */
+            gap: 0.8rem;
+            margin: 1.5rem 0;
+            padding: 0.8rem;
+            background: var(--light);
+            border-radius: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem; /* زيادة المساحة الداخلية */
+            background: var(--white);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .stat-item .number {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.3rem; /* زيادة حجم الخط قليلاً */
+            margin-bottom: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-item .label {
+            color: var(--gray);
+            font-size: 0.9rem; /* زيادة حجم الخط قليلاً */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* إضافة تصميم لمعلومات المدرسة والمحافظة */
+        .user-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            background: var(--light);
+            border-radius: 10px;
+            color: var(--dark);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .meta-item:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .meta-item:hover i {
+            color: var(--white);
+        }
+
+        .meta-item i {
+            color: var(--primary);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* تحديث تصميم زر العرض */
+        .user-actions {
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .view-btn:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .view-btn i {
+            font-size: 1.1rem;
+        }
+
+        .filters-section {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 2.5rem 0.8rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: var(--light);
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            min-width: 180px;
+            position: relative;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 0.8rem 2.5rem 0.8rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: var(--light);
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .filter-group::after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            pointer-events: none;
+        }
+
+        .filter-group select:not(:disabled):hover {
+            border-color: var(--primary-light);
+            background: var(--white);
+        }
+
+        .filter-group select:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .filter-group select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box,
+            .filter-group {
+                width: 100%;
+            }
+        }
+
+        /* تنسيقات شاشة التحميل */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        .loading-text {
+            color: var(--dark);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* تنسيق تحميل البطاقات */
+        .user-card {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                
+            }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 1.1rem;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Loading indicator for infinite scroll */
+        .loading-more {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 1rem;
+            display: none;
+        }
+
+        .loading-more.show {
+            display: block;
+        }
+
+        .loading-more .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .user-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item.pending {
+            background: #fff5f5;
+            color: #e53e3e;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .stat-item.pending .stat-value {
+            color: #e53e3e;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.2rem;
+        }
+
+        .action-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+            position: relative;
+            color: transparent !important;
+        }
+
+        .action-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simplified Navigation -->
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <i class="fas fa-home"></i> جميع المستخدمين
+        </div>
+        <div class="nav-menu">
+            <a href="admin-panel.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="users.html" class="nav-item active">
+                <i class="fas fa-users"></i>
+                <span>المستخدمون</span>
+            </a>
+            <a href="all-documents.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>المستندات</span>
+            </a>
+            <a href="upload-pdf.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>رفع ملف</span>
+            </a>
+            <a href="file-management.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>إدارة الملفات</span>
+            </a>
+        </div>
+    </nav>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">جاري تحميل البيانات...</p>
+    </div>
+
+    <div class="main-container">
+        <div class="filters-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="البحث بالاسم أو المدرسة..." oninput="filterUsers()">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="filters-row">
+                <div class="filter-group">
+                    <select id="governorateFilter" onchange="handleGovernorateChange()">
+                        <option value="">كل المحافظات</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="administrationFilter" onchange="handleAdministrationChange()" disabled>
+                        <option value="">كل الإدارات</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="instituteFilter" onchange="filterUsers()" disabled>
+                        <option value="">كل المدارس</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="users-grid" id="usersGrid">
+            <!-- سيتم إضافة بطاقات المستخدمين هنا -->
+        </div>
+        
+        <!-- Loading indicator for infinite scroll -->
+        <div class="loading-more" id="loadingMore">
+            <div class="spinner"></div>
+            <p>جاري تحميل المزيد...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_e0oD-74pSllN0yivBYiX-4oYbO_1PJ4",
+            authDomain: "learning-8f044.firebaseapp.com",
+            databaseURL: "https://learning-8f044-default-rtdb.firebaseio.com",
+            projectId: "learning-8f044",
+            storageBucket: "learning-8f044.firebasestorage.app",
+            messagingSenderId: "453828841732",
+            appId: "1:453828841732:web:99226149b359d41df64051",
+            measurementId: "G-SCSBHBQM08"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // إضافة المتغيرات العامة
+        window.allUsers = [];
+        window.governoratesMap = {};
+        window.administrationsMap = {};
+        window.institutesMap = {};
+        window.currentPage = 0;
+        window.usersPerPage = 20;
+        window.isLoading = false;
+        const CACHE_KEY = 'adminPanelUsersCache';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+        // التحقق من صلاحيات المشرف
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userRef = ref(db, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+                const userData = snapshot.val();
+                
+                if (!userData || userData.userType !== 'admin') {
+                loadUsers();
+            } else {
+                loadUsers();
+            }        
+            } else {
+                loadUsers();
+            }
+        });
+
+        // إضافة دالة تحديث الفلاتر للنافذة
+        function updateFilters() {
+            const governorateSelect = document.getElementById('governorateFilter');
+            const administrationSelect = document.getElementById('administrationFilter');
+            const instituteSelect = document.getElementById('instituteFilter');
+
+            // تحديث قائمة المحافظات
+            governorateSelect.innerHTML = '<option value="">كل المحافظات</option>';
+            Object.keys(window.governoratesMap).sort().forEach(governorate => {
+                governorateSelect.innerHTML += `<option value="${governorate}">${governorate}</option>`;
+            });
+        }
+
+        // إضافة دوال التصفية للنافذة
+        window.handleGovernorateChange = function() {
+            const governorateSelect = document.getElementById('governorateFilter');
+            const administrationSelect = document.getElementById('administrationFilter');
+            const instituteSelect = document.getElementById('instituteFilter');
+            
+            const selectedGovernorate = governorateSelect.value;
+            
+            // إعادة تعيين الإدارات والمدارس
+            administrationSelect.innerHTML = '<option value="">كل الإدارات</option>';
+            instituteSelect.innerHTML = '<option value="">كل المدارس</option>';
+            
+            if (selectedGovernorate) {
+                administrationSelect.disabled = false;
+                const administrations = Object.keys(window.administrationsMap[selectedGovernorate] || {}).sort();
+                administrations.forEach(administration => {
+                    administrationSelect.innerHTML += `<option value="${administration}">${administration}</option>`;
+                });
+            } else {
+                administrationSelect.disabled = true;
+                instituteSelect.disabled = true;
+            }
+            
+            window.filterUsers();
+        };
+
+        window.handleAdministrationChange = function() {
+            const administrationSelect = document.getElementById('administrationFilter');
+            const instituteSelect = document.getElementById('instituteFilter');
+            
+            const selectedAdministration = administrationSelect.value;
+            
+            // إعادة تعيين المدارس
+            instituteSelect.innerHTML = '<option value="">كل المدارس</option>';
+            
+            if (selectedAdministration) {
+                instituteSelect.disabled = false;
+                const institutes = Object.keys(window.institutesMap[selectedAdministration] || {}).sort();
+                institutes.forEach(institute => {
+                    instituteSelect.innerHTML += `<option value="${institute}">${institute}</option>`;
+                });
+            } else {
+                instituteSelect.disabled = true;
+            }
+            
+            window.filterUsers();
+        };
+
+        // تحديث دالة loadUsers وجعلها متاحة عالمياً
+        window.loadUsers = async function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const usersGrid = document.getElementById('usersGrid');
+            const loadingText = document.querySelector('.loading-text');
+            
+            try {
+                // Load from cache first for instant display
+                const cached = localStorage.getItem(CACHE_KEY);
+                let showedCache = false;
+                
+                if (cached) {
+                    try {
+                        const cachedData = JSON.parse(cached);
+                        
+                        // Show cached data immediately
+                        if (cachedData.users && cachedData.users.length > 0) {
+                            console.log('Displaying cached data...');
+                            window.allUsers = cachedData.users;
+                            window.governoratesMap = cachedData.governoratesMap || {};
+                            window.administrationsMap = cachedData.administrationsMap || {};
+                            window.institutesMap = cachedData.institutesMap || {};
+                            
+                            loadingOverlay.classList.add('hidden');
+                            usersGrid.style.display = 'grid';
+                            updateFilters();
+                            window.filterUsers();
+                            showedCache = true;
+                            
+                            loadingText.textContent = 'تحديث البيانات في الخلفية...';
+                        }
+                    } catch (e) {
+                        console.error('Error loading cache:', e);
+                        localStorage.removeItem(CACHE_KEY);
+                    }
+                }
+                
+                // Show loading overlay only if no cache was displayed
+                if (!showedCache) {
+                    loadingOverlay.classList.remove('hidden');
+                    usersGrid.style.display = 'none';
+                    loadingText.textContent = 'جاري تحميل بيانات المستخدمين...';
+                }
+                
+                // Fetch fresh data from server
+                console.log('Fetching fresh data from server...');
+                
+                // تنظيف المتغيرات العالمية المؤقتة
+                const tempUsers = [];
+                const tempGovernoratesMap = {};
+                const tempAdministrationsMap = {};
+                const tempInstitutesMap = {};
+
+                loadingText.textContent = 'جاري جلب بيانات المستخدمين...';
+                const usersRef = ref(db, 'users');
+                const snapshot = await get(usersRef);
+                const users = snapshot.val() || {};
+
+                const processedUsers = new Map();
+                let processedCount = 0;
+                const totalUsers = Object.entries(users).filter(([, user]) => user.userType === 'user').length;
+
+                for (const [uid, user] of Object.entries(users)) {
+                    if (user.userType !== 'user') continue;
+                    
+                    processedCount++;
+                    if (!showedCache) {
+                        loadingText.textContent = `جاري معالجة بيانات المستخدمين (${processedCount}/${totalUsers})...`;
+                    }
+                    
+                    // تجميع بيانات الفلاتر
+                    if (user.governorate) {
+                        tempGovernoratesMap[user.governorate] = true;
+                        
+                        if (user.administration) {
+                            if (!tempAdministrationsMap[user.governorate]) {
+                                tempAdministrationsMap[user.governorate] = {};
+                            }
+                            tempAdministrationsMap[user.governorate][user.administration] = true;
+                            
+                            if (user.institute) {
+                                if (!tempInstitutesMap[user.administration]) {
+                                    tempInstitutesMap[user.administration] = {};
+                                }
+                                tempInstitutesMap[user.administration][user.institute] = true;
+                            }
+                        }
+                    }
+
+                    const imagesRef = ref(db, `users/${uid}/images`);
+                    const imagesSnapshot = await get(imagesRef);
+                    const images = imagesSnapshot.val() || {};
+                    
+                    let lastActivity = 0;
+                    let totalDocs = 0;
+                    let pendingDocs = 0;
+
+                    Object.values(images).forEach(section => {
+                        if (section) {
+                            Object.values(section).forEach(doc => {
+                                totalDocs++;
+                                if (doc.status === 'pending') pendingDocs++;
+                                if (doc && doc.uploadedAt) {
+                                    const uploadTime = new Date(doc.uploadedAt).getTime();
+                                    lastActivity = Math.max(lastActivity, uploadTime);
+                                }
+                            });
+                        }
+                    });
+
+                    processedUsers.set(uid, {
+                        uid,
+                        user,
+                        lastActivity: lastActivity || 0,
+                        stats: {
+                            totalDocs,
+                            pendingDocs
+                        }
+                    });
+                }
+
+                const freshUsers = Array.from(processedUsers.values())
+                    .sort((a, b) => b.lastActivity - a.lastActivity);
+                
+                // Check if data has changed
+                const dataChanged = JSON.stringify(window.allUsers) !== JSON.stringify(freshUsers);
+                
+                if (dataChanged || !showedCache) {
+                    console.log('Data changed, updating display...');
+                    
+                    // Update global variables
+                    window.allUsers = freshUsers;
+                    window.governoratesMap = tempGovernoratesMap;
+                    window.administrationsMap = tempAdministrationsMap;
+                    window.institutesMap = tempInstitutesMap;
+                    
+                    // Save to cache
+                    const cacheData = {
+                        users: freshUsers,
+                        governoratesMap: tempGovernoratesMap,
+                        administrationsMap: tempAdministrationsMap,
+                        institutesMap: tempInstitutesMap,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+                    
+                    // Reset pagination
+                    window.currentPage = 0;
+                    
+                    // Update UI
+                    updateFilters();
+                    window.filterUsers();
+                } else {
+                    console.log('No changes detected, using cached data');
+                }
+
+                // نخفي شاشة التحميل فقط إذا كانت ظاهرة
+                if (!loadingOverlay.classList.contains('hidden')) {
+                    loadingOverlay.classList.add('hidden');
+                    usersGrid.style.display = 'grid';
+                }
+
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('حدث خطأ في تحميل البيانات', true);
+                
+                // Try to use cache on error
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    try {
+                        const cachedData = JSON.parse(cached);
+                        window.allUsers = cachedData.users || [];
+                        window.governoratesMap = cachedData.governoratesMap || {};
+                        window.administrationsMap = cachedData.administrationsMap || {};
+                        window.institutesMap = cachedData.institutesMap || {};
+                        updateFilters();
+                        window.filterUsers();
+                        showToast('تم تحميل البيانات المحفوظة محلياً', false);
+                    } catch (e) {
+                        console.error('Error loading cache on error:', e);
+                    }
+                }
+                
+                if (!loadingOverlay.classList.contains('hidden')) {
+                    loadingOverlay.classList.add('hidden');
+                    usersGrid.style.display = 'grid';
+                }
+            }
+        };
+
+        // دالة لتحميل المستخدمين المتبقيين عند التمرير
+        window.loadMoreUsers = function() {
+            if (window.isLoading) return;
+            
+            window.isLoading = true;
+            const loadingMore = document.getElementById('loadingMore');
+            loadingMore.classList.add('show');
+            
+            // Simulate network delay for demonstration
+            setTimeout(() => {
+                window.currentPage++;
+                window.filterUsers();
+                window.isLoading = false;
+                loadingMore.classList.remove('show');
+            }, 500);
+        };
+
+        // تحديث دالة filterUsers لعرض إحصائيات المستندات مع دعم التمرير اللانهائي
+        window.filterUsers = function() {
+            const searchInput = document.getElementById('searchInput');
+            const governorateSelect = document.getElementById('governorateFilter');
+            const administrationSelect = document.getElementById('administrationFilter');
+            const instituteSelect = document.getElementById('instituteFilter');
+            const usersGrid = document.getElementById('usersGrid');
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedGovernorate = governorateSelect.value;
+            const selectedAdministration = administrationSelect.value;
+            const selectedInstitute = instituteSelect.value;
+            
+            const filteredUsers = window.allUsers.filter(({ user }) => {
+                const nameMatch = user.name.toLowerCase().includes(searchTerm);
+                const instituteMatch = user.institute.toLowerCase().includes(searchTerm);
+                const searchMatch = nameMatch || instituteMatch;
+                
+                const governorateMatch = !selectedGovernorate || user.governorate === selectedGovernorate;
+                const administrationMatch = !selectedAdministration || user.administration === selectedAdministration;
+                const instituteMatch2 = !selectedInstitute || user.institute === selectedInstitute;
+                
+                return searchMatch && governorateMatch && administrationMatch && instituteMatch2;
+            });
+            
+            // Calculate pagination
+            const startIndex = 0;
+            const endIndex = (window.currentPage + 1) * window.usersPerPage;
+            const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+            
+            // If it's the first page, replace the content, otherwise append
+            if (window.currentPage === 0) {
+                usersGrid.innerHTML = paginatedUsers.length === 0 ? 
+                    '<div class="no-results">لا توجد نتائج</div>' : 
+                    paginatedUsers.map(({ uid, user, stats }) => `
+                        <div class="user-card">
+                            <div class="user-header">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-info">
+                                    <h3>${user.name}</h3>
+                                    <p class="institute-name"><i class="fas fa-school"></i> ${user.institute}</p>
+                                </div>
+                            </div>
+                            <div class="user-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    ${user.governorate}
+                                </div>
+                            </div>
+                            <div class="user-stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value">${stats.totalDocs}</div>
+                                    <div class="stat-label">إجمالي المستندات</div>
+                                </div>
+                                <div class="stat-item ${stats.pendingDocs > 0 ? 'pending' : ''}">
+                                    <div class="stat-value">${stats.pendingDocs}</div>
+                                    <div class="stat-label">قيد المراجعة</div>
+                                </div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="action-btn view-btn" onclick="viewUserDetails('${uid}')">
+                                    <i class="fas fa-eye"></i>
+                                    عرض التفاصيل
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+            } else {
+                // Append new users to existing content
+                const newUsersHTML = paginatedUsers.map(({ uid, user, stats }) => `
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <h3>${user.name}</h3>
+                                <p class="institute-name"><i class="fas fa-school"></i> ${user.institute}</p>
+                            </div>
+                        </div>
+                        <div class="user-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${user.governorate}
+                            </div>
+                        </div>
+                        <div class="user-stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${stats.totalDocs}</div>
+                                <div class="stat-label">إجمالي المستندات</div>
+                            </div>
+                            <div class="stat-item ${stats.pendingDocs > 0 ? 'pending' : ''}">
+                                <div class="stat-value">${stats.pendingDocs}</div>
+                                <div class="stat-label">قيد المراجعة</div>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn view-btn" onclick="viewUserDetails('${uid}')">
+                                <i class="fas fa-eye"></i>
+                                عرض التفاصيل
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                usersGrid.innerHTML += newUsersHTML;
+            }
+            
+            // Check if we've loaded all users
+            const loadMoreElement = document.getElementById('loadingMore');
+            if (endIndex >= filteredUsers.length) {
+                loadMoreElement.style.display = 'none';
+            } else {
+                loadMoreElement.style.display = 'block';
+            }
+        };
+
+        // تحميل المستخدمين عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            window.loadUsers();
+            
+            // Add scroll event listener for infinite scrolling
+            window.addEventListener('scroll', () => {
+                const loadingMore = document.getElementById('loadingMore');
+                if (loadingMore.classList.contains('show')) return;
+                
+                // Check if user has scrolled to the bottom
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+                    // Load more users if we haven't reached the end
+                    const filteredUsers = window.allUsers.filter(({ user }) => {
+                        const searchInput = document.getElementById('searchInput');
+                        const governorateSelect = document.getElementById('governorateFilter');
+                        const administrationSelect = document.getElementById('administrationFilter');
+                        const instituteSelect = document.getElementById('instituteFilter');
+                        
+                        const searchTerm = searchInput.value.toLowerCase();
+                        const selectedGovernorate = governorateSelect.value;
+                        const selectedAdministration = administrationSelect.value;
+                        const selectedInstitute = instituteSelect.value;
+                        
+                        const nameMatch = user.name.toLowerCase().includes(searchTerm);
+                        const instituteMatch = user.institute.toLowerCase().includes(searchTerm);
+                        const searchMatch = nameMatch || instituteMatch;
+                        
+                        const governorateMatch = !selectedGovernorate || user.governorate === selectedGovernorate;
+                        const administrationMatch = !selectedAdministration || user.administration === selectedAdministration;
+                        const instituteMatch2 = !selectedInstitute || user.institute === selectedInstitute;
+                        
+                        return searchMatch && governorateMatch && administrationMatch && instituteMatch2;
+                    });
+                    
+                    const loadedUsers = document.querySelectorAll('.user-card').length;
+                    if (loadedUsers < filteredUsers.length) {
+                        window.loadMoreUsers();
+                    }
+                }
+            });
+        });
+
+        // دالة التنقل بين الصفحات
+        window.navigateTo = function(page) {
+            window.location.href = page;
+        };
+
+        // دالة عرض تفاصيل المستخدم
+        window.viewUserDetails = function(uid) {
+            // حفظ معرف المستخدم في التخزين المحلي
+            localStorage.setItem('selectedUserId', uid);
+            // الانتقال إلى صفحة تفاصيل المستخدم
+            window.location.href = 'user-details.html';
+        };
+
+        // Helper Functions
+        function showToast(message, isError = false) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                className: isError ? "toast-error" : "toast-success",
+                stopOnFocus: true
+            }).showToast();
+        }
+    </script>
+</body>
+</html>

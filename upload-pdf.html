@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>رفع الملفات - نظام إدارة الجودة</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Cairo', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #f8fafc;
+      min-height: 100vh;
+      padding-top: 60px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* New simplified navigation */
+    .main-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-item {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover {
+      background: #f8fafc;
+      color: #3b82f6;
+    }
+
+    .nav-item.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .main-container {
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .welcome-section {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      color: white;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .welcome-section h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .welcome-section p {
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    .upload-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+
+    .file-input-container {
+      position: relative;
+      margin: 1rem 0;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-input-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+      position: relative;
+    }
+
+    .file-input-label.drag-over {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+      transform: scale(1.02);
+    }
+
+    .file-input-label:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+
+    .file-input-label i {
+      font-size: 2rem;
+      color: #3b82f6;
+      margin-bottom: 0.5rem;
+    }
+
+    .file-input-label span {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .file-selected {
+      background: #f0f7ff;
+      border-color: #3b82f6;
+    }
+
+    .file-info {
+      display: none;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+
+    .file-info.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .file-name-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .file-name-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .file-extension {
+      display: inline-block;
+      color: #64748b;
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+
+    .file-size {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .upload-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .upload-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .upload-btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .progress-container {
+      display: none;
+      margin: 1rem 0;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      margin-top: 0.5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      display: none;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .status-success {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-error {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .status-info {
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+    }
+
+    .success-actions {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .file-preview {
+      margin: 1rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .file-preview.show {
+      display: block;
+    }
+
+    .file-preview img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      background: #f8fafc;
+    }
+
+    .success-actions.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .action-btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .action-btn-secondary {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    .recent-uploads {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-top: 1rem;
+    }
+
+    .recent-uploads h3 {
+      font-size: 1rem;
+      color: #1e293b;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .recent-file {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .recent-file:active {
+      background: #e2e8f0;
+      transform: scale(0.98);
+    }
+
+    .recent-file-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .recent-file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .recent-file-name {
+      font-size: 0.85rem;
+      color: #1e293b;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recent-file-size {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      border-radius: 12px;
+      width: 100%;
+      border: 1px solid #e2e8f0;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 0.25rem;
+      text-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .stat-label i {
+      font-size: 0.9rem;
+      color: #3b82f6;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0.5rem;
+      }
+      
+      .welcome-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .welcome-section h1 {
+        font-size: 1.2rem;
+      }
+      
+      .upload-card {
+        padding: 1rem;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 900px;
+        padding: 2rem;
+      }
+
+      .welcome-section {
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .welcome-section h1 {
+        font-size: 1.8rem;
+      }
+
+      .welcome-section p {
+        font-size: 1.1rem;
+      }
+
+      .upload-card {
+        padding: 2rem;
+      }
+
+      .file-input-label {
+        padding: 3rem;
+      }
+
+      .file-input-label i {
+        font-size: 3rem;
+      }
+
+      .file-input-label span {
+        font-size: 1.1rem;
+      }
+
+      .upload-btn {
+        padding: 1.25rem;
+        font-size: 1.1rem;
+      }
+
+      .stats-card {
+        padding: 2rem;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+      }
+
+      .stat-label {
+        font-size: 0.95rem;
+      }
+
+      .recent-uploads {
+        padding: 2rem;
+      }
+
+      .recent-uploads h3 {
+        font-size: 1.2rem;
+      }
+
+      .recent-file {
+        padding: 1rem;
+      }
+
+      .recent-file-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+      }
+
+      .recent-file-name {
+        font-size: 1rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 1200px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Simplified Navigation -->
+  <nav class="main-nav">
+    <div class="nav-logo">
+      <i class="fas fa-upload"></i> رفع الملفات
+    </div>
+    <div class="nav-menu">
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="users.html" class="nav-item">
+        <i class="fas fa-users"></i>
+        <span>المستخدمون</span>
+      </a>
+      <a href="all-documents.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        <span>المستندات</span>
+      </a>
+      <a href="upload-pdf.html" class="nav-item active">
+        <i class="fas fa-upload"></i>
+        <span>رفع ملف</span>
+      </a>
+      <a href="file-management.html" class="nav-item">
+        <i class="fas fa-cog"></i>
+        <span>إدارة الملفات</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Breadcrumbs removed for simplified navigation -->
+
+  <div class="main-container">
+    <section class="welcome-section">
+      <h1>رفع الملفات</h1>
+      <p>اختر ملف وسيتم رفعه وحفظه في قاعدة البيانات</p>
+    </section>
+
+    <div class="upload-card">
+      <div class="file-input-container">
+        <input type="file" id="fileInput" class="file-input" accept="*/*" />
+        <label for="fileInput" class="file-input-label" id="fileInputLabel">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>اضغط لاختيار ملف أو اسحب الملف هنا</span>
+        </label>
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <div style="display: flex; align-items: center;">
+          <input type="text" id="fileNameInput" class="file-name-input" placeholder="اسم الملف">
+          <span class="file-extension" id="fileExtension"></span>
+        </div>
+        <div class="file-size" id="fileSize"></div>
+      </div>
+
+      <div class="file-preview" id="filePreview">
+        <!-- Preview will be shown here -->
+      </div>
+
+      <button id="uploadBtn" class="upload-btn" disabled>
+        <i class="fas fa-upload"></i>
+        رفع الملف
+      </button>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="success-actions" id="successActions">
+        <div class="action-buttons">
+          <button class="action-btn action-btn-primary" id="copyLinkBtn" style="display: none;">
+            <i class="fas fa-copy"></i>
+            نسخ الرابط
+          </button>
+          <button class="action-btn action-btn-secondary" onclick="uploadAnother()">
+            <i class="fas fa-plus"></i>
+            رفع ملف آخر
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" id="totalFiles">0</div>
+          <div class="stat-label">
+            إجمالي الملفات
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-uploads" id="recentUploads" style="display: none;">
+      <h3>🕒 آخر الملفات المرفوعة</h3>
+      <div id="recentFilesList">
+        <!-- Recent files will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_e0oD-74pSllN0yivBYiX-4oYbO_1PJ4",
+      authDomain: "learning-8f044.firebaseapp.com",
+      databaseURL: "https://learning-8f044-default-rtdb.firebaseio.com",
+      projectId: "learning-8f044",
+      storageBucket: "learning-8f044.firebasestorage.app",
+      messagingSenderId: "453828841732",
+      appId: "1:453828841732:web:99226149b359d41df64051",
+      measurementId: "G-SCSBHBQM08"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    // Elements
+    const fileInput = document.getElementById("fileInput");
+    const fileInputLabel = document.getElementById("fileInputLabel");
+    const fileInfo = document.getElementById("fileInfo");
+    const fileNameInput = document.getElementById("fileNameInput");
+    const fileExtension = document.getElementById("fileExtension");
+    const fileSize = document.getElementById("fileSize");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const progressContainer = document.getElementById("progressContainer");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const statusMessage = document.getElementById("statusMessage");
+    const successActions = document.getElementById("successActions");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const filePreview = document.getElementById("filePreview");
+    const recentUploadsSection = document.getElementById("recentUploads");
+    const recentFilesList = document.getElementById("recentFilesList");
+    const totalFilesEl = document.getElementById("totalFiles");
+
+    const UPLOADCARE_PUBLIC_KEY = "6e561e1b2dee35d6b6f2";
+    const CACHE_KEY = 'uploadStats';
+    const RECENT_CACHE_KEY = 'recentUploads';
+
+    // File selection handler
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        handleFileSelect(file);
+      }
+    });
+
+    function handleFileSelect(file) {
+      // Update UI
+      fileInputLabel.classList.add("file-selected");
+      fileInputLabel.innerHTML = `
+        <i class="fas fa-file"></i>
+        <span>تم اختيار الملف</span>
+      `;
+      
+      // Extract filename and extension
+      const lastDotIndex = file.name.lastIndexOf('.');
+      const fileNameWithoutExt = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+      const fileExt = lastDotIndex > 0 ? file.name.substring(lastDotIndex) : '';
+      
+      // Show file info with editable name (without extension) and fixed extension
+      fileNameInput.value = fileNameWithoutExt;
+      fileExtension.textContent = fileExt;
+      fileSize.textContent = formatFileSize(file.size);
+      
+      // Show file info box and upload button
+      fileInfo.classList.add("show");
+      fileInfo.style.display = 'block';
+      uploadBtn.style.display = 'flex';
+      
+      // Focus on filename input
+      setTimeout(() => {
+        fileNameInput.focus();
+        fileNameInput.select();
+      }, 100);
+      
+      // Show preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          filePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+          filePreview.classList.add("show");
+        };
+        reader.readAsDataURL(file);
+      } else {
+        filePreview.classList.remove("show");
+      }
+      
+      // Enable upload button
+      uploadBtn.disabled = false;
+    }
+
+    // Drag and drop handlers
+    fileInputLabel.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      fileInputLabel.classList.add("drag-over");
+    });
+
+    fileInputLabel.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      fileInputLabel.classList.remove("drag-over");
+    });
+
+    fileInputLabel.addEventListener("drop", (e) => {
+      e.preventDefault();
+      fileInputLabel.classList.remove("drag-over");
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(files[0]);
+      }
+    });
+
+    // Upload handler
+    uploadBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      // Get the filename (use edited name or original)
+      const lastDotIndex = file.name.lastIndexOf('.');
+      const fileExt = lastDotIndex > 0 ? file.name.substring(lastDotIndex) : '';
+      const fileNameToUse = fileNameInput.value.trim() + fileExt || file.name;
+
+      // Reset UI
+      uploadBtn.disabled = true;
+      progressContainer.classList.add("show");
+      statusMessage.classList.remove("show");
+      successActions.classList.remove("show");
+
+      // Show initial progress
+      updateProgress(0, 'تحضير الرفع...');
+
+      try {
+        // Prepare upload (5%)
+        updateProgress(5, 'جاري رفع الملف إلى Uploadcare...');
+
+        // Upload to Uploadcare
+        const formData = new FormData();
+        formData.append('UPLOADCARE_PUB_KEY', UPLOADCARE_PUBLIC_KEY);
+        formData.append('UPLOADCARE_STORE', '1');
+        formData.append('file', file);
+
+        // Start upload (10%)
+        updateProgress(10, 'جاري الرفع...');
+
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            // Calculate progress from 10% to 70%
+            const percentComplete = Math.round((e.loaded / e.total) * 60) + 10;
+            updateProgress(percentComplete, `جاري الرفع... (${formatFileSize(e.loaded)} / ${formatFileSize(e.total)})`);
+          }
+        });
+
+        // Create promise for XMLHttpRequest
+        const uploadPromise = new Promise((resolve, reject) => {
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              reject(new Error('فشل رفع الملف إلى Uploadcare'));
+            }
+          };
+          xhr.onerror = () => reject(new Error('حدث خطأ في الاتصال'));
+        });
+
+        xhr.open('POST', 'https://upload.uploadcare.com/base/');
+        xhr.send(formData);
+
+        const uploadData = await uploadPromise;
+        const fileId = uploadData.file;
+
+        updateProgress(75, 'تم الرفع، جاري التحقق...');
+
+        // Wait for file to be ready and get info
+        const infoResponse = await fetch(`https://upload.uploadcare.com/info/?file_id=${fileId}&pub_key=${UPLOADCARE_PUBLIC_KEY}`);
+        const fileInfo = await infoResponse.json();
+
+        // Build the CDN link with the proper Uploadcare CDN domain and filename
+        // Instead of using the original_file_url, we construct it with the filename
+        const fileNameForUrl = encodeURIComponent(fileNameToUse);
+        const cdnLink = `https://4cy204ihxj.ucarecd.net/${fileId}/${fileNameForUrl}`;
+
+        updateProgress(85, 'جاري حفظ البيانات في Firebase...');
+        
+        // Save to Firebase with the direct CDN link
+        try {
+          const fileData = {
+            fileName: fileNameInput.value.trim() + fileExt || file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            directLink: cdnLink,
+            uploadcareFileId: fileId,
+            uploadDate: firebase.database.ServerValue.TIMESTAMP,
+            uploaderEmail: localStorage.getItem('userEmail') || 'unknown'
+          };
+          
+          await database.ref('uploaded_files').push(fileData);
+          
+          updateProgress(100, 'اكتمل!');
+          
+          // Show success with the link
+          showStatus('تم رفع الملف بنجاح!', "success");
+          
+          // Hide file input and upload button - with error handling
+          try {
+            const fileInputContainer = document.querySelector('.file-input-container');
+            if (fileInputContainer) {
+              fileInputContainer.style.display = 'none';
+            }
+            if (uploadBtn) {
+              uploadBtn.style.display = 'none';
+            }
+            if (fileInfo) {
+              fileInfo.classList.remove('show');
+              fileInfo.style.display = 'none';
+            }
+            if (filePreview) {
+              filePreview.classList.remove('show');
+            }
+            
+            // Show copy link button with the actual link
+            const copyBtn = document.getElementById('copyLinkBtn');
+            if (copyBtn) {
+              copyBtn.dataset.link = cdnLink;
+              copyBtn.style.display = 'flex';
+            }
+          } catch (uiError) {
+            console.error('خطأ في تحديث واجهة المستخدم:', uiError);
+          }
+          
+          successActions.classList.add("show");
+          updateStats();
+          loadRecentUploads();
+                      
+          // Reset filename input for next upload
+          fileNameInput.value = '';
+          fileExtension.textContent = '';
+          
+        } catch (firebaseError) {
+          console.error("خطأ في حفظ البيانات:", firebaseError);
+          showStatus("حدث خطأ أثناء حفظ الملف في قاعدة البيانات: " + firebaseError.message, "error");
+        }
+      } catch (error) {
+        console.error(error);
+        showStatus("حدث خطأ أثناء رفع الملف: " + error.message, "error");
+      } finally {
+        uploadBtn.disabled = false;
+        setTimeout(() => {
+          progressContainer.classList.remove("show");
+        }, 1000);
+      }
+    });
+
+    // Helper function to update progress
+    function updateProgress(percent, message) {
+      progressFill.style.width = percent + "%";
+      progressText.textContent = percent + "% - " + message;
+    }
+
+    // Helper functions
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 بايت';
+      const k = 1024;
+      const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = `status-message show status-${type}`;
+    }
+
+    async function updateStats() {
+      // Load from cache first for instant display
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          const data = JSON.parse(cached);
+          totalFilesEl.textContent = data.totalFiles || 0;
+        } catch (e) {
+          console.error('Error loading cache:', e);
+        }
+      }
+
+      // Then fetch from server and update if different
+      try {
+        const snapshot = await database.ref('uploaded_files').once('value');
+        const files = snapshot.val() || {};
+        const fileList = Object.values(files);
+        
+        const totalFiles = fileList.length;
+        
+        // Only update if different
+        if (totalFilesEl.textContent != totalFiles) {
+          totalFilesEl.textContent = totalFiles;
+        }
+        
+        // Save to cache
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          totalFiles: totalFiles,
+          lastUpdate: Date.now()
+        }));
+      } catch (error) {
+        console.error("خطأ في تحديث الإحصائيات:", error);
+      }
+    }
+
+    // Load recent uploads
+    async function loadRecentUploads() {
+      // Load from cache first for instant display
+      const cached = localStorage.getItem(RECENT_CACHE_KEY);
+      if (cached) {
+        try {
+          const files = JSON.parse(cached);
+          displayRecentFiles(files);
+        } catch (e) {
+          console.error('Error loading cached recent files:', e);
+        }
+      }
+
+      // Then fetch from server and update if different
+      try {
+        const snapshot = await database.ref('uploaded_files').orderByChild('uploadDate').limitToLast(3).once('value');
+        const files = [];
+        snapshot.forEach(child => {
+          files.unshift({ id: child.key, ...child.val() });
+        });
+        
+        // Check if data changed before updating
+        const cachedFiles = localStorage.getItem(RECENT_CACHE_KEY);
+        const cachedFilesData = cachedFiles ? JSON.parse(cachedFiles) : [];
+        const hasChanged = JSON.stringify(files) !== JSON.stringify(cachedFilesData);
+        
+        if (hasChanged) {
+          // Save to cache
+          localStorage.setItem(RECENT_CACHE_KEY, JSON.stringify(files));
+          displayRecentFiles(files);
+        }
+      } catch (error) {
+        console.error('خطأ في تحميل الملفات الأخيرة:', error);
+      }
+    }
+
+    function displayRecentFiles(files) {
+      if (files.length > 0) {
+        recentFilesList.innerHTML = files.map(file => `
+          <div class="recent-file" onclick="window.open('${file.directLink}', '_blank')">
+            <div class="recent-file-icon">${getFileIconHTML(file.fileType)}</div>
+            <div class="recent-file-info">
+              <div class="recent-file-name">${file.fileName || 'ملف'}</div>
+              <div class="recent-file-size">${formatFileSize(file.fileSize || 0)}</div>
+            </div>
+          </div>
+        `).join('');
+        recentUploadsSection.style.display = 'block';
+      }
+    }
+
+    function getFileIconHTML(fileType) {
+      if (fileType?.includes('pdf')) return '<i class="fas fa-file-pdf"></i>';
+      if (fileType?.includes('image')) return '<i class="fas fa-file-image"></i>';
+      if (fileType?.includes('video')) return '<i class="fas fa-file-video"></i>';
+      if (fileType?.includes('word')) return '<i class="fas fa-file-word"></i>';
+      if (fileType?.includes('excel')) return '<i class="fas fa-file-excel"></i>';
+      if (fileType?.includes('powerpoint') || fileType?.includes('presentation')) return '<i class="fas fa-file-powerpoint"></i>';
+      return '<i class="fas fa-file"></i>';
+    }
+
+    window.uploadAnother = function() {
+      try {
+        // Reset form
+        if (fileNameInput) fileNameInput.value = '';
+        if (fileExtension) fileExtension.textContent = '';
+        if (fileSize) fileSize.textContent = '';
+        if (fileInputLabel) {
+          fileInputLabel.classList.remove("file-selected");
+          fileInputLabel.innerHTML = `
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>اضغط لاختيار ملف أو اسحب الملف هنا</span>
+          `;
+        }
+        if (fileInfo) fileInfo.classList.remove("show");
+        if (filePreview) filePreview.classList.remove("show");
+        if (uploadBtn) uploadBtn.disabled = true;
+        if (statusMessage) statusMessage.classList.remove("show");
+        if (successActions) successActions.classList.remove("show");
+        
+        // Show file input and upload button
+        const fileInputContainer = document.querySelector('.file-input-container');
+        if (fileInputContainer) {
+          fileInputContainer.style.display = 'block';
+        }
+        if (uploadBtn) {
+          uploadBtn.style.display = 'flex';
+        }
+        
+        // Hide copy link button
+        const copyBtn = document.getElementById('copyLinkBtn');
+        if (copyBtn) {
+          copyBtn.style.display = 'none';
+          copyBtn.dataset.link = '';
+        }
+        
+        // Reset file input
+        if (fileInput) fileInput.value = '';
+      } catch (error) {
+        console.error('خطأ في uploadAnother:', error);
+      }
+    };
+
+    // Add event listener for copy link button
+    if (copyLinkBtn) {
+      copyLinkBtn.addEventListener('click', () => {
+        const link = copyLinkBtn.dataset.link;
+        if (link) {
+          navigator.clipboard.writeText(link).then(() => {
+            // Show visual feedback
+            const originalText = copyLinkBtn.innerHTML;
+            copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+            setTimeout(() => {
+              copyLinkBtn.innerHTML = originalText;
+            }, 2000);
+          }).catch(err => {
+            console.error('Failed to copy: ', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = link;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Show visual feedback
+            const originalText = copyLinkBtn.innerHTML;
+            copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+            setTimeout(() => {
+              copyLinkBtn.innerHTML = originalText;
+            }, 2000);
+          });
+        }
+      });
+    }
+    
+    // Add real-time listener for automatic updates
+    function setupRealTimeUpdates() {
+      try {
+        console.log("Setting up real-time file monitoring for upload page...");
+        
+        // Remove previous listener if exists
+        if (window.filesListener) {
+          database.ref('uploaded_files').off('value', window.filesListener);
+        }
+        
+        // Set up real-time listener
+        window.filesListener = database.ref('uploaded_files').on('value', (snapshot) => {
+          console.log("Files data changed in upload page, updating stats and recent files...");
+          
+          // Update stats
+          const files = snapshot.val() || {};
+          const fileList = Object.values(files);
+          const totalFiles = fileList.length;
+          
+          // Only update if different
+          if (parseInt(totalFilesEl.textContent) !== totalFiles) {
+            totalFilesEl.textContent = totalFiles;
+            
+            // Save to cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+              totalFiles: totalFiles,
+              lastUpdate: Date.now()
+            }));
+          }
+          
+          // Update recent uploads
+          const recentFiles = [];
+          snapshot.forEach(child => {
+            recentFiles.unshift({ id: child.key, ...child.val() });
+          });
+          
+          // Limit to 3 most recent
+          recentFiles.splice(3);
+          
+          // Save to cache and update display
+          const cachedFiles = localStorage.getItem(RECENT_CACHE_KEY);
+          const cachedFilesData = cachedFiles ? JSON.parse(cachedFiles) : [];
+          const hasChanged = JSON.stringify(recentFiles) !== JSON.stringify(cachedFilesData);
+          
+          if (hasChanged) {
+            localStorage.setItem(RECENT_CACHE_KEY, JSON.stringify(recentFiles));
+            displayRecentFiles(recentFiles);
+          }
+        }, (error) => {
+          console.error('Error setting up real-time listener:', error);
+        });
+        
+      } catch (error) {
+        console.error('Error setting up real-time file monitoring:', error);
+      }
+    }
+    
+    // Load stats on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateStats();
+      loadRecentUploads();
+      setupRealTimeUpdates();
+    });
+  </script>
+</body>
+</html>

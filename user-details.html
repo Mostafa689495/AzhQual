@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المستخدم - نظام مراجعة الوثائق</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #f43f5e;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: var(--light);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        /* Simplified Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .main-container {
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .modal-body {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding: 2rem !important;
+            background: #f8fafc !important;
+            height: calc(100vh - 70px) !important;
+            width: 100% !important;
+        }
+
+        /* تنسيقات نافذة تفاصيل المستخدم */
+        .user-details-page {
+            background: #f8fafc;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+            color: #fff !important;
+            padding: 1.5rem 2rem !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 16px !important;
+            margin-bottom: 2rem !important;
+        }
+
+        .page-header h2 {
+            font-size: 1.6rem !important;
+            margin: 0;
+            color: #fff !important;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .page-header h2:before {
+            content: '\f507';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            font-size: 1.2rem !important;
+        }
+
+        .page-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: white !important;
+            border-radius: 20px !important;
+            padding: 2rem !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.8rem !important;
+            padding-bottom: 1.5rem !important;
+            border-bottom: 2px solid #f1f5f9 !important;
+        }
+
+        .info-card-icon {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 12px !important;
+            font-size: 1.4rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff !important;
+        }
+
+        .personal-info .info-card-icon { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+        .institute-info .info-card-icon { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
+        .stats-info .info-card-icon { background: linear-gradient(135deg, #ec4899, #db2777) !important; }
+
+        .info-card-title {
+            font-size: 1.3rem !important;
+            color: #1e293b !important;
+            font-weight: 600 !important;
+            margin: 0;
+        }
+
+        .info-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-link {
+            color: #3b82f6;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .user-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .documents-section {
+            width: 100% !important;
+            min-width: 0 !important;
+            overflow-x: hidden !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            padding: 2rem !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+            margin-top: 2rem !important;
+        }
+
+        .documents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem !important;
+        }
+
+        .documents-title {
+            font-size: 1.4rem !important;
+            color: #1e293b !important;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .documents-title i {
+            color: #3b82f6 !important;
+            font-size: 1.2rem !important;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-container input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-container:hover i {
+            color: #3b82f6;
+        }
+
+        .search-clear {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .search-clear.show {
+            opacity: 1;
+        }
+
+        .search-clear:hover {
+            color: #ef4444;
+            background: #f1f5f9;
+        }
+
+        .search-container:focus-within {
+            transform: translateY(-2px);
+        }
+
+        .documents-tabs {
+            background: var(--light);
+            padding: 0.5rem;
+            border-radius: 10px;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        /* تحسين التجاوب */
+        @media (max-width: 1024px) {
+            .document-card {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-card {
+                padding: 1.5rem !important;
+            }
+            
+            .document-actions .action-btn {
+                flex: 1 1 100%;
+            }
+        }
+
+        /* تحديث تنسيقات فلتر الأقسام الفرعية */
+        .subsections-filter {
+            display: none;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .subsections-filter.active {
+            display: flex;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .subsection-btn {
+            padding: 0.8rem 1.2rem;
+            background: var(--light);
+            border: none;
+            border-radius: 8px;
+            color: var(--gray);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .subsection-btn.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .subsection-btn:hover:not(.active) {
+            background: #e2e8f0;
+        }
+
+        /* تحسين السكرول الأفقي */
+        .subsections-filter::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .subsections-filter::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 3px;
+        }
+
+        .subsections-filter::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .info-card.stats-info .info-list {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .info-card.stats-info .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem !important;
+            text-align: center;
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
+        }
+
+        .info-card.stats-info .info-item:nth-child(1) {
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+            grid-column: 1 / -1;
+        }
+
+        .info-card.stats-info .info-item:nth-child(2) {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            grid-column: 1 / -1;
+        }
+
+        .info-card.stats-info .info-item:nth-child(3) {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+        }
+
+        .info-card.stats-info .info-item:nth-child(4) {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        }
+
+        .info-card.stats-info .info-label {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.9rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .info-card.stats-info .info-value {
+            color: #ffffff !important;
+            font-size: 1.8rem !important;
+            font-weight: 600 !important;
+        }
+
+        .info-card .info-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-card .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
+        }
+
+        /* تنسيق البيانات الشخصية */
+        .info-card.personal-info .info-item:nth-child(1) {
+            background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        }
+
+        .info-card.personal-info .info-item:nth-child(2) {
+            background: linear-gradient(135deg, #ec4899, #db2777) !important;
+        }
+
+        .info-card.personal-info .info-item:nth-child(3) {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+        }
+
+        /* تنسيق معلومات المعهد */
+        .info-card.institute-info .info-item:nth-child(1) {
+            background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+        }
+
+        .info-card.institute-info .info-item:nth-child(2) {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+        }
+
+        .info-card.institute-info .info-item:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        }
+
+        .info-card .info-label {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.9rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .info-card .info-value {
+            color: #ffffff !important;
+            font-size: 1.2rem !important;
+            font-weight: 500 !important;
+        }
+
+        /* تحسين أيقونات العناوين */
+        .info-card-header {
+            margin-bottom: 1.5rem !important;
+            padding: 1rem !important;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .info-card-icon {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 15px !important;
+            font-size: 1.5rem !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .info-card-title {
+            color: var(--dark) !important;
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+        }
+
+        .action-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+            position: relative;
+            color: transparent !important;
+        }
+
+        .action-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        .loading-text {
+            color: var(--dark);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .documents-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .document-card {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .document-thumbnail {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+        }
+
+        .document-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .document-thumbnail.no-image {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            font-size: 2rem;
+        }
+
+        .document-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .document-title {
+            font-size: 1.3rem !important;
+            color: #1e293b !important;
+            margin-bottom: 1rem !important;
+            font-weight: 600;
+        }
+
+        .document-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 0.9rem 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .comment-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .status-approved {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .status-rejected {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .tab-button {
+            padding: 0.8rem 1.2rem;
+            background: var(--light);
+            border: none;
+            border-radius: 8px;
+            color: var(--gray);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .tab-button.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Simplified Navigation -->
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <i class="fas fa-home"></i> لوحة التحكم
+        </div>
+        <div class="nav-menu">
+            <a href="admin-panel.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="users.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>المستخدمون</span>
+            </a>
+            <a href="all-documents.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>المستندات</span>
+            </a>
+            <a href="upload-pdf.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>رفع ملف</span>
+            </a>
+            <a href="file-management.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>إدارة الملفات</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div id="userDetailsContainer">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">جاري تحميل تفاصيل المستخدم...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_e0oD-74pSllN0yivBYiX-4oYbO_1PJ4",
+            authDomain: "learning-8f044.firebaseapp.com",
+            databaseURL: "https://learning-8f044-default-rtdb.firebaseio.com",
+            projectId: "learning-8f044",
+            storageBucket: "learning-8f044.firebasestorage.app",
+            messagingSenderId: "453828841732",
+            appId: "1:453828841732:web:99226149b359d41df64051",
+            measurementId: "G-SCSBHBQM08"
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // دالة التنقل بين الصفحات
+        window.navigateTo = function(page) {
+            window.location.href = page;
+        }
+
+        // دالة الحصول على عدد المستندات
+        async function getDocumentsCount(uid) {
+            const imagesRef = ref(db, `users/${uid}/images`);
+            return get(imagesRef)
+                .then(snapshot => {
+                    const images = snapshot.val() || {};
+                    let total = 0;
+                    let pending = 0;
+                    let approved = 0;
+                    let rejected = 0;
+
+                    Object.values(images).forEach(section => {
+                        Object.values(section).forEach(doc => {
+                            total++;
+                            if (doc.status === 'pending') pending++;
+                            if (doc.status === 'approved') approved++;
+                            if (doc.status === 'rejected') rejected++;
+                        });
+                    });
+
+                    return { total, pending, approved, rejected };
+                })
+                .catch(error => {
+                    console.error('Error getting documents count:', error);
+                    showToast('حدث خطأ في تحميل إحصائيات المستندات', true);
+                    return { total: 0, pending: 0, approved: 0, rejected: 0 };
+                });
+        }
+
+        // دالة تحميل تفاصيل المستخدم
+        async function loadUserDetails() {
+            const userDetailsContainer = document.getElementById('userDetailsContainer');
+            
+            // الحصول على معرف المستخدم من التخزين المحلي
+            const userId = localStorage.getItem('selectedUserId');
+            
+            if (!userId) {
+                userDetailsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h3>لم يتم تحديد مستخدم</h3>
+                        <button class="back-btn" onclick="navigateTo('users.html')" style="margin-top: 1rem;">
+                            <i class="fas fa-arrow-right"></i>
+                            العودة إلى قائمة المستخدمين
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const userRef = ref(db, `users/${userId}`);
+                const snapshot = await get(userRef);
+                const user = snapshot.val();
+                
+                if (!user) {
+                    userDetailsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <h3>المستخدم غير موجود</h3>
+                            <button class="back-btn" onclick="navigateTo('users.html')" style="margin-top: 1rem;">
+                                <i class="fas fa-arrow-right"></i>
+                                العودة إلى قائمة المستخدمين
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const documentsCount = await getDocumentsCount(userId);
+
+                userDetailsContainer.innerHTML = `
+                    <div class="user-details-page">
+                        <div class="page-header">
+                            <h2>تفاصيل المستخدم</h2>
+                        </div>
+                        <div class="page-content">
+                            <div class="user-info-grid">
+                                <div class="info-card personal-info">
+                                    <div class="info-card-header">
+                                        <div class="info-card-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <h3 class="info-card-title">البيانات الشخصية</h3>
+                                    </div>
+                                    
+                                    <div class="info-list">
+                                        <div class="info-item">
+                                            <span class="info-label">الاسم</span>
+                                            <span class="info-value">${user.name}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">رقم الهاتف</span>
+                                            <span class="info-value">${user.phone}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">تاريخ التسجيل</span>
+                                            <span class="info-value">${new Date(user.createdAt || Date.now()).toLocaleDateString('ar-EG')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-card institute-info">
+                                    <div class="info-card-header">
+                                        <div class="info-card-icon">
+                                            <i class="fas fa-school"></i>
+                                        </div>
+                                        <h3 class="info-card-title">معلومات المعهد</h3>
+                                    </div>
+                                    <div class="info-list">
+                                        <div class="info-item">
+                                            <span class="info-label">المحافظة</span>
+                                            <span class="info-value">${user.governorate}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">الإدارة</span>
+                                            <span class="info-value">${user.administration}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">المعهد</span>
+                                            <span class="info-value">${user.institute}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-card stats-info">
+                                    <div class="info-card-header">
+                                        <div class="info-card-icon">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </div>
+                                        <h3 class="info-card-title">إحصائيات المستندات</h3>
+                                    </div>
+                                    <div class="info-list">
+                                        <div class="info-item">
+                                            <span class="info-label">إجمالي المستندات</span>
+                                            <span class="info-value">${documentsCount.total}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">قيد المراجعة</span>
+                                            <span class="info-value">${documentsCount.pending}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">تمت الموافقة</span>
+                                            <span class="info-value">${documentsCount.approved}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">مرفوضة</span>
+                                            <span class="info-value">${documentsCount.rejected}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="documents-section">
+                                <div class="documents-header">
+                                    <h3 class="documents-title">
+                                        <i class="fas fa-file-alt"></i>
+                                        المستندات
+                                    </h3>
+                                    <a href="users.html" class="back-btn">
+                                        <i class="fas fa-arrow-right"></i>
+                                        العودة إلى المستخدمين
+                                    </a>
+                                </div>
+                                <div class="search-container">
+                                    <input type="text" id="documentSearch" placeholder="البحث في المستندات..." oninput="searchDocuments()">
+                                    <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display: none;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div id="documentsContainer">
+                                    <div class="loading-spinner"></div>
+                                    <p class="loading-text">جاري تحميل المستندات...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                await loadUserDocuments(userId, document.querySelector('#documentsContainer'));
+            } catch (error) {
+                console.error('Error loading user details:', error);
+                userDetailsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h3>حدث خطأ في تحميل تفاصيل المستخدم</h3>
+                        <p>${error.message}</p>
+                        <button class="back-btn" onclick="navigateTo('users.html')" style="margin-top: 1rem;">
+                            <i class="fas fa-arrow-right"></i>
+                            العودة إلى قائمة المستخدمين
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // تحميل مستندات المستخدم
+        async function loadUserDocuments(uid, container) {
+            const imagesRef = ref(db, `users/${uid}/images`);
+            const snapshot = await get(imagesRef);
+            const images = snapshot.val() || {};
+
+            let tabsHtml = '<div class="documents-tabs">';
+            let contentHtml = '';
+            let isFirst = true;
+
+            for (const [section, docs] of Object.entries(images)) {
+                const sectionTitle = getSectionTitle(section);
+                const activeClass = isFirst ? 'active' : '';
+                
+                // جمع الأقسام الفرعية الفريدة
+                const subsections = new Set();
+                const subsubsections = new Set();
+                Object.values(docs).forEach(doc => {
+                    if (doc.subsection) {
+                        subsections.add(doc.subsection);
+                    }
+                    if (doc.subSubsection) {
+                        subsubsections.add(doc.subSubsection);
+                    }
+                });
+                
+                tabsHtml += `
+                    <button class="tab-button ${activeClass}" onclick="switchTab('${section}')">
+                        ${sectionTitle}
+                    </button>
+                `;
+
+                contentHtml += `
+                    <div id="tab-${section}" class="tab-content ${activeClass}" data-section="${section}">
+                        ${subsections.size > 0 ? `
+                            <div class="subsections-filter ${isFirst ? 'active' : ''}" id="subsections-${section}">
+                                <button class="subsection-btn active" onclick="filterSubsections('${section}', '')">
+                                    الكل
+                                </button>
+                                ${Array.from(subsections).map(sub => `
+                                    <button class="subsection-btn" onclick="filterSubsections('${section}', '${sub}')">
+                                        ${sub}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="documents-grid">
+                            ${Object.entries(docs).map(([docId, doc]) => `
+                                <div class="document-card" data-id="${docId}" data-subsection="${doc.subsection || ''}" data-subsubsection="${doc.subSubsection || ''}">
+                                    <div class="document-thumbnail">
+                                        <img src="${doc[0]}" alt="${doc.title || 'مستند'}">
+                                    </div>
+                                    <div class="document-details">
+                                        <h3 class="document-title">${doc.title || 'مستند بدون عنوان'}</h3>
+                                        <div class="document-info">
+                                            <div class="info-item">
+                                                <span class="info-label">تاريخ الرفع</span>
+                                                <span class="info-value">${new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}</span>
+                                            </div>
+                                            ${doc.subsection ? `
+                                                <div class="info-item">
+                                                    <span class="info-label">القسم الفرعي</span>
+                                                    <span class="info-value">${doc.subsection}</span>
+                                                </div>
+                                            ` : ''}
+                                            ${doc.subSubsection ? `
+                                                <div class="info-item">
+                                                    <span class="info-label">القسم الفرعي الثاني</span>
+                                                    <span class="info-value">${doc.subSubsection}</span>
+                                                </div>
+                                            ` : ''}
+                                            <div class="info-item">
+                                                <span class="info-label">الحالة</span>
+                                                <span class="status-badge status-${doc.status || 'pending'}">
+                                                    <i class="fas fa-${getStatusIcon(doc.status)}"></i>
+                                                    ${getStatusText(doc.status)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="document-actions">
+                                            <button class="action-btn view-btn" onclick="viewImages('${uid}', '${section}', '${docId}')">
+                                                <i class="fas fa-images"></i>
+                                                عرض الصور
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                isFirst = false;
+            }
+
+            tabsHtml += '</div>';
+            container.innerHTML = Object.keys(images).length ? tabsHtml + contentHtml : '<p>لا توجد مستندات</p>';
+            
+            // تأكد من أن فلتر القسم الفرعي للتاب الأول ظاهر
+            if (Object.keys(images).length > 0) {
+                const firstSection = Object.keys(images)[0];
+                const subsectionsFilter = document.getElementById(`subsections-${firstSection}`);
+                if (subsectionsFilter) {
+                    subsectionsFilter.classList.add('active');
+                }
+            }
+        }
+
+        // دالة تبديل التبويبات
+        window.switchTab = function(sectionId) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.querySelector(`.tab-button[onclick*="${sectionId}"]`).classList.add('active');
+            const tabContent = document.getElementById(`tab-${sectionId}`);
+            tabContent.classList.add('active');
+
+            // إظهار فلتر الأقسام الفرعية إذا وجد
+            const subsectionsFilter = document.getElementById(`subsections-${sectionId}`);
+            if (subsectionsFilter) {
+                subsectionsFilter.classList.add('active');
+                
+                // تفعيل زرار "الكل" تلقائياً
+                const allButton = subsectionsFilter.querySelector('.subsection-btn');
+                if (allButton) {
+                    // إزالة التفعيل من جميع الأزرار أولاً
+                    subsectionsFilter.querySelectorAll('.subsection-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // تفعيل زرار "الكل"
+                    allButton.classList.add('active');
+                    // تطبيق الفلتر "الكل" تلقائياً
+                    filterSubsections(sectionId, '');
+                }
+            }
+        };
+
+        // دالة تصفية الأقسام الفرعية
+        window.filterSubsections = function(section, subsection) {
+            const tabContent = document.getElementById(`tab-${section}`);
+            const cards = tabContent.querySelectorAll('.document-card');
+            const buttons = tabContent.querySelectorAll('.subsection-btn');
+            
+            // تحديث حالة أزرار القسم الفرعي الأول
+            buttons.forEach(btn => {
+                if (
+                    (subsection === '' && btn.textContent.trim() === 'الكل') ||
+                    btn.textContent.trim() === subsection
+                ) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // تصفية البطاقات بناءً على القسم الفرعي الأول
+            cards.forEach(card => {
+                if (!subsection || card.dataset.subsection === subsection) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+
+        // دالة عرض الصور
+        window.viewImages = function(uid, section, docId) {
+            // حفظ معلومات المستند في التخزين المحلي
+            localStorage.setItem('selectedDocument', JSON.stringify({ uid, section, docId }));
+            // الانتقال إلى صفحة المستندات
+            window.location.href = 'documents.html';
+        };
+
+        // دالة عرض التعليقات
+        window.showComments = function(uid, section, docId) {
+            // حفظ معلومات المستند في التخزن المحلي
+            localStorage.setItem('selectedDocument', JSON.stringify({ uid, section, docId }));
+            // الانتقال إلى صفحة المستندات
+            window.location.href = 'documents.html';
+        };
+
+        // دالة تحديث الحالة
+        window.updateStatus = async function(uid, section, docId, newStatus) {
+            try {
+                const docRef = ref(db, `users/${uid}/images/${section}/${docId}`);
+                await update(docRef, { status: newStatus });
+                
+                showToast(newStatus === 'approved' 
+                    ? 'تم الموافقة على المستند بنجاح' 
+                    : 'تم رفض المستند بنجاح'
+                );
+                
+                // إعادة تحميل تفاصيل المستخدم
+                loadUserDetails();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('حدث خطأ أثناء تحديث حالة المستند', true);
+            }
+        };
+
+        // دالة عرض ملف المستخدم
+        window.viewUserProfile = function(userId) {
+            localStorage.setItem('selectedUserId', userId);
+            window.location.href = 'user-details.html';
+        };
+
+        // Helper Functions
+        function getSectionTitle(section) {
+            const titles = {
+                'hierarchy': 'الوثائق',
+                'leadership-meetings': 'اجتماعات القيادة',
+                'supervisor-meetings': 'اجتماعات المشرفين',
+                'family-meetings': 'اجتماعات الأسر',
+                'social-specialist': 'الأخصائي الاجتماعي',
+                'librarian': 'أمين المكتبة',
+                'sports': 'سجل التربية الرياضية',
+                'general-photos': 'صور عامة ولوحات المعهد',
+                'results': 'النتيجة',
+                'attendance': 'الغياب',
+                'domains': 'المجالات',
+                'notes': 'الملاحظات',
+                'training': 'وحدة التدريب',
+                'committees': 'اللجان',
+                'health-visitor': 'توثيق أنشطة الزائرة الصحية',
+                'broadcast': 'الإذاعة',
+                'curriculum-maps': 'خرائط المنهج',
+                'teacher-record': 'سجل المعلم',
+                'special-needs': 'سجل ذوي الاحتياجات الخاصة',
+                'science-lab': 'معمل العلوم',
+                'maintenance': 'سجل المتابعة والصيانة',
+                'student-affairs': 'شؤون الطلبة',
+                'institution-context': 'سياق المؤسسة',
+                'staff-affairs': 'شؤون العاملين',
+                'remedial-programs': 'البرامج العلاجية',
+                'library': 'أمين المكتبة',
+                'complaints': 'لجنة الشكاوي والمقترحات',
+                'computer-lab': 'معمل الحاسب',
+                'reward-committee': 'لجنة الأثابة والتقويم',
+                'preparation-books':' دفاتر التحضير',
+                'hope-peace-committee': 'لجنة الأمل والسلام'
+            };
+            return titles[section] || section;
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'pending': 'clock',
+                'approved': 'check-circle',
+                'rejected': 'times-circle'
+            };
+            return icons[status] || 'clock';
+        }
+
+        function getStatusText(status) {
+            const statusTexts = {
+                'pending': 'قيد المراجعة',
+                'approved': 'تمت الموافقة',
+                'rejected': 'مرفوض'
+            };
+            return statusTexts[status] || 'قيد المراجعة';
+        }
+
+        function showToast(message, isError = false) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                className: isError ? "toast-error" : "toast-success",
+                stopOnFocus: true
+            }).showToast();
+        }
+
+        // دالة البحث في المستندات
+        window.searchDocuments = function() {
+            const searchInput = document.getElementById('documentSearch');
+            if (!searchInput) return;
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const documentCards = document.querySelectorAll('.document-card');
+            
+            documentCards.forEach(card => {
+                const title = card.querySelector('.document-title').textContent.toLowerCase();
+                const subsection = card.querySelector('.info-value')?.textContent.toLowerCase() || '';
+                
+                if (title.includes(searchTerm) || subsection.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(10px)';
+                    card.style.transition = 'all 0.3s ease';
+                    
+                    // Trigger reflow to enable transition
+                    void card.offsetWidth;
+                    
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+
+        // دالة حذف البحث
+        window.clearSearch = function() {
+            document.getElementById('documentSearch').value = '';
+            document.getElementById('searchClear').classList.remove('show');
+            searchDocuments();
+        }
+
+        // تحميل تفاصيل المستخدم عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserDetails();
+            
+            // تأكد من وجود عنصر البحث قبل إضافة المستمع
+            const searchInput = document.getElementById('documentSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    if (this.value) {
+                        document.getElementById('searchClear').classList.add('show');
+                    } else {
+                        document.getElementById('searchClear').classList.remove('show');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

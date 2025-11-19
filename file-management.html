@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>إدارة الملفات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Cairo', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #f8fafc;
+      min-height: 100vh;
+      padding-top: 60px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* New simplified navigation */
+    .main-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-item {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover {
+      background: #f8fafc;
+      color: #3b82f6;
+    }
+
+    .nav-item.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .main-container {
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .welcome-section {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      color: white;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .welcome-section h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .welcome-section p {
+      font-size: 0.9rem;
+      opacity: 0.95;
+    }
+
+    .search-box {
+      background: white;
+      border-radius: 16px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.9rem;
+      color: #1e293b;
+    }
+
+    .search-box input::placeholder {
+      color: #94a3b8;
+    }
+
+    .search-box i {
+      color: #64748b;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .loading {
+      text-align: center;
+      color: #64748b;
+      font-size: 1rem;
+      margin: 2rem 0;
+      padding: 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .files-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .file-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .file-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .file-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .file-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+      word-break: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .file-meta {
+      font-size: 0.85rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .file-meta::after {
+      content: '';
+      width: 1px;
+      height: 12px;
+      background: #e2e8f0;
+      margin: 0 0.25rem;
+    }
+
+    .file-meta span:last-child::after {
+      display: none;
+    }
+
+    .file-date {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.5rem;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .file-date i {
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    .btn-edit:active {
+      transform: scale(0.98);
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-download:active {
+      transform: scale(0.98);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: #94a3b8;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 100%;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Delete Confirmation Modal */
+    .delete-modal .modal-content {
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .delete-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #dc2626;
+      animation: scaleIn 0.4s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .delete-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+
+    .delete-message {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    .delete-filename {
+      font-weight: 600;
+      color: #dc2626;
+      word-break: break-word;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
+      background: #fef2f2;
+      border-radius: 8px;
+    }
+
+    .delete-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-delete-confirm {
+      flex: 1;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 1rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-delete-confirm:active {
+      transform: scale(0.98);
+    }
+
+    .btn-delete-cancel {
+      flex: 1;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-delete-cancel:active {
+      transform: scale(0.98);
+      background: #e2e8f0;
+    }
+
+    .modal-header {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+
+    .modal-body {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .file-extension {
+      display: inline-block;
+      color: #64748b;
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-cancel {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0.5rem;
+      }
+      
+      .welcome-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .welcome-section h1 {
+        font-size: 1.2rem;
+      }
+      
+      .file-card {
+        padding: 1rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 900px;
+        padding: 2rem;
+      }
+
+      .welcome-section {
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .welcome-section h1 {
+        font-size: 1.8rem;
+      }
+
+      .welcome-section p {
+        font-size: 1.1rem;
+      }
+
+      .search-box {
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+      }
+
+      .stat-label {
+        font-size: 1rem;
+      }
+
+      .files-grid {
+        gap: 1.5rem;
+      }
+
+      .file-card {
+        padding: 1.5rem;
+      }
+
+      .file-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.8rem;
+      }
+
+      .file-name {
+        font-size: 1.1rem;
+      }
+
+      .file-meta {
+        font-size: 0.95rem;
+      }
+
+      .btn {
+        padding: 0.85rem;
+        font-size: 1rem;
+      }
+
+      .modal-content {
+        max-width: 500px;
+        padding: 2rem;
+      }
+
+      .modal-header {
+        font-size: 1.4rem;
+      }
+
+      .form-input {
+        padding: 0.85rem;
+        font-size: 1rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 1200px;
+      }
+
+      .files-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Simplified Navigation -->
+  <nav class="main-nav">
+    <div class="nav-logo">
+      <i class="fas fa-cog"></i> إدارة الملفات
+    </div>
+    <div class="nav-menu">
+      <a href="admin-panel.html" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
+      </a>
+      <a href="users.html" class="nav-item">
+        <i class="fas fa-users"></i>
+        <span>المستخدمون</span>
+      </a>
+      <a href="all-documents.html" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        <span>المستندات</span>
+      </a>
+      <a href="upload-pdf.html" class="nav-item">
+        <i class="fas fa-upload"></i>
+        <span>رفع ملف</span>
+      </a>
+      <a href="file-management.html" class="nav-item active">
+        <i class="fas fa-cog"></i>
+        <span>إدارة الملفات</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <section class="welcome-section">
+      <h1>إدارة الملفات</h1>
+      <p>تعديل وحذف الملفات المرفوعة</p>
+    </section>
+
+    <div class="stats-card">
+      <div class="stat-number" id="totalFiles">0</div>
+      <div class="stat-label">إجمالي الملفات</div>
+    </div>
+
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="ابحث عن ملف..." />
+    </div>
+
+    <div id="loading" class="loading">
+      🔄 جاري تحميل الملفات...
+    </div>
+
+    <div id="filesContainer" class="files-grid" style="display: none;">
+      <!-- Files will be displayed here -->
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">تعديل اسم الملف</div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">اسم الملف الجديد</label>
+          <div style="display: flex; align-items: center;">
+            <input type="text" id="newFileName" class="form-input" placeholder="أدخل اسم الملف الجديد">
+            <span class="file-extension" id="editFileExtension"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeEditModal()">إلغاء</button>
+        <button class="btn btn-save" onclick="saveFileName()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal delete-modal">
+    <div class="modal-content">
+      <div class="delete-icon">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+      <div class="delete-title">حذف الملف</div>
+      <div class="delete-message">هل أنت متأكد من حذف هذا الملف؟</div>
+      <div class="delete-filename" id="deleteFileName"></div>
+      <div class="delete-actions">
+        <button class="btn-delete-cancel" onclick="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+          إلغاء
+        </button>
+        <button class="btn-delete-confirm" onclick="confirmDelete()">
+          <i class="fas fa-trash-alt"></i>
+          حذف
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_e0oD-74pSllN0yivBYiX-4oYbO_1PJ4",
+      authDomain: "learning-8f044.firebaseapp.com",
+      databaseURL: "https://learning-8f044-default-rtdb.firebaseio.com",
+      projectId: "learning-8f044",
+      storageBucket: "learning-8f044.firebasestorage.app",
+      messagingSenderId: "453828841732",
+      appId: "1:453828841732:web:99226149b359d41df64051",
+      measurementId: "G-SCSBHBQM08"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    let files = [];
+    let filteredFiles = [];
+    let currentEditingFile = null;
+    let currentEditingFileExtension = '';
+    let currentDeletingFile = null;
+    let filesListener = null;
+    const CACHE_KEY = 'managementFilesCache';
+
+    // Load files from Firebase with real-time updates
+    function loadFiles() {
+      const loadingEl = document.getElementById('loading');
+      const filesContainer = document.getElementById('filesContainer');
+      
+      // Load from cache first for instant display
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          const cachedData = JSON.parse(cached);
+          files = cachedData.files || [];
+          filteredFiles = [...files];
+          
+          if (files.length > 0) {
+            loadingEl.style.display = 'none';
+            updateStats();
+            displayFiles();
+            filesContainer.style.display = 'flex';
+          }
+        } catch (e) {
+          console.error('Error loading cache:', e);
+        }
+      } else {
+        loadingEl.style.display = 'block';
+        filesContainer.style.display = 'none';
+      }
+
+      try {
+        console.log("Setting up real-time file monitoring...");
+        
+        // Remove previous listener if exists
+        if (filesListener) {
+          database.ref('uploaded_files').off('value', filesListener);
+        }
+        
+        // Set up real-time listener
+        filesListener = database.ref('uploaded_files').on('value', (snapshot) => {
+          console.log("Files data changed, updating...");
+          
+          const newFiles = [];
+          snapshot.forEach(childSnapshot => {
+            const fileData = childSnapshot.val();
+            newFiles.push({ id: childSnapshot.key, ...fileData });
+          });
+          
+          newFiles.sort((a, b) => (b.uploadDate || 0) - (a.uploadDate || 0));
+          
+          // Check if data changed before updating
+          const hasChanged = JSON.stringify(files) !== JSON.stringify(newFiles);
+          
+          if (hasChanged) {
+            files = newFiles;
+            filteredFiles = [...files];
+            
+            // Save to cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+              files: files,
+              lastUpdate: Date.now()
+            }));
+
+            updateStats();
+            displayFiles();
+          }
+          
+          loadingEl.style.display = 'none';
+          
+          if (files.length === 0) {
+            filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>لا توجد ملفات محفوظة بعد</div></div>';
+            filesContainer.style.display = 'block';
+          } else {
+            filesContainer.style.display = 'flex';
+          }
+        }, (error) => {
+          console.error('Error loading files:', error);
+          loadingEl.innerHTML = '❌ حدث خطأ في تحميل الملفات';
+        });
+        
+      } catch (error) {
+        console.error('Error setting up file monitoring:', error);
+        loadingEl.innerHTML = '❌ حدث خطأ في تحميل الملفات';
+      }
+    }
+
+    // Update statistics
+    function updateStats() {
+      document.getElementById('totalFiles').textContent = files.length;
+    }
+
+    // Display files
+    function displayFiles() {
+      const container = document.getElementById('filesContainer');
+      container.innerHTML = '';
+
+      if (filteredFiles.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><div>لا توجد ملفات تطابق البحث</div></div>';
+        return;
+      }
+
+      filteredFiles.forEach(file => {
+        const fileCard = createFileCard(file);
+        container.appendChild(fileCard);
+      });
+    }
+
+    // Create file card
+    function createFileCard(file) {
+      const card = document.createElement('div');
+      card.className = 'file-card';
+      
+      // Check if file should be downloaded instead of opened
+      const isDownloadable = isDownloadableFile(file.fileType);
+      
+      card.innerHTML = `
+        <div class="file-header">
+          <div class="file-icon">${getFileIcon(file.fileType)}</div>
+          <div class="file-details">
+            <div class="file-name">${file.fileName || 'ملف غير معروف'}</div>
+            <div class="file-meta">
+              ${file.uploadDate ? `<span class="file-date"><i class="fas fa-calendar-alt"></i>${formatShortDate(file.uploadDate)}</span>` : ''}
+              <span>${formatFileSize(file.fileSize || 0)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="file-actions">
+          ${isDownloadable ? 
+            `<a href="${file.directLink}" download="${file.fileName}" class="btn btn-download">
+              <i class="fas fa-download"></i>
+              تحميل
+            </a>` : 
+            `<a href="${file.directLink}" target="_blank" class="btn btn-primary">
+              <i class="fas fa-external-link-alt"></i>
+              فتح
+            </a>`
+          }
+          <button onclick="openEditModal('${file.id}', '${escapeHtml(file.fileName)}')" class="btn btn-edit">
+            <i class="fas fa-edit"></i>
+            تعديل الاسم
+          </button>
+          <button onclick="deleteFile('${file.id}', '${escapeHtml(file.fileName)}')" class="btn btn-delete">
+            <i class="fas fa-trash-alt"></i>
+            حذف
+          </button>
+        </div>
+      `;
+      
+      return card;
+    }
+
+    // Get file icon
+    function getFileIcon(fileType) {
+      if (fileType?.includes('pdf')) return '<i class="fas fa-file-pdf"></i>';
+      if (fileType?.includes('image')) return '<i class="fas fa-file-image"></i>';
+      if (fileType?.includes('video')) return '<i class="fas fa-file-video"></i>';
+      if (fileType?.includes('audio')) return '<i class="fas fa-file-audio"></i>';
+      if (fileType?.includes('text')) return '<i class="fas fa-file-alt"></i>';
+      if (fileType?.includes('zip') || fileType?.includes('rar')) return '<i class="fas fa-file-archive"></i>';
+      if (fileType?.includes('word')) return '<i class="fas fa-file-word"></i>';
+      if (fileType?.includes('excel')) return '<i class="fas fa-file-excel"></i>';
+      if (fileType?.includes('powerpoint') || fileType?.includes('presentation') || fileType?.includes('officedocument.presentationml')) return '<i class="fas fa-file-powerpoint"></i>';
+      return '<i class="fas fa-file"></i>';
+    }
+
+    // Check if file should be downloaded
+    function isDownloadableFile(fileType) {
+      return fileType?.includes('word') || 
+             fileType?.includes('excel') || 
+             fileType?.includes('powerpoint') ||
+             fileType?.includes('presentation') ||
+             fileType?.includes('application/vnd') ||
+             fileType?.includes('application/msword') || fileType?.includes('spreadsheet') ||
+             fileType?.includes('officedocument.presentationml');
+    }
+
+    // تنسيق التاريخ (قصير - ميلادي)
+    function formatShortDate(timestamp) {
+      const date = new Date(timestamp);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    // تنسيق حجم الملف
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 بايت';
+      const k = 1024;
+      const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text?.replace(/[&<>"']/g, m => map[m]) || '';
+    }
+
+    // Search files
+    function searchFiles(query) {
+      const searchTerm = query.toLowerCase();
+      filteredFiles = files.filter(file => 
+        file.fileName?.toLowerCase().includes(searchTerm)
+      );
+      displayFiles();
+    }
+
+    // Open edit modal
+    function openEditModal(fileId, fileName) {
+      currentEditingFile = fileId;
+      
+      // Extract filename and extension
+      const lastDotIndex = fileName.lastIndexOf('.');
+      const fileNameWithoutExt = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+      currentEditingFileExtension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+      
+      document.getElementById('newFileName').value = fileNameWithoutExt;
+      document.getElementById('editFileExtension').textContent = currentEditingFileExtension;
+      document.getElementById('editModal').classList.add('show');
+      
+      // Focus on input
+      setTimeout(() => {
+        document.getElementById('newFileName').focus();
+        document.getElementById('newFileName').select();
+      }, 100);
+    }
+
+    // Close edit modal
+    function closeEditModal() {
+      currentEditingFile = null;
+      currentEditingFileExtension = '';
+      document.getElementById('editModal').classList.remove('show');
+    }
+
+    // Save file name
+    async function saveFileName() {
+      const newNameWithoutExt = document.getElementById('newFileName').value.trim();
+      
+      if (!newNameWithoutExt) {
+        alert('الرجاء إدخال اسم الملف');
+        return;
+      }
+
+      // Combine name with extension
+      const newName = newNameWithoutExt + currentEditingFileExtension;
+
+      try {
+        // Update in Firebase - real-time listener will update UI automatically
+        await database.ref('uploaded_files/' + currentEditingFile).update({
+          fileName: newName
+        });
+        
+        showNotification('تم تعديل اسم الملف بنجاح!');
+        closeEditModal();
+        // No need to call loadFiles() - real-time listener handles it
+      } catch (error) {
+        console.error('Error updating file name:', error);
+        showNotification('حدث خطأ أثناء تعديل اسم الملف');
+      }
+    }
+
+    // Delete file
+    function deleteFile(fileId, fileName) {
+      currentDeletingFile = { id: fileId, name: fileName };
+      document.getElementById('deleteFileName').textContent = fileName;
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    // Close delete modal
+    function closeDeleteModal() {
+      currentDeletingFile = null;
+      document.getElementById('deleteModal').classList.remove('show');
+    }
+
+    // Confirm delete
+    async function confirmDelete() {
+      if (!currentDeletingFile) return;
+
+      try {
+        // Delete from Firebase - real-time listener will update UI automatically
+        await database.ref('uploaded_files/' + currentDeletingFile.id).remove();
+        showNotification('تم حذف الملف بنجاح!');
+        closeDeleteModal();
+        // No need to call loadFiles() - real-time listener handles it
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        showNotification('حدث خطأ أثناء حذف الملف');
+      }
+    }
+
+    // Show notification
+    function showNotification(message) {
+      const existingNotification = document.querySelector('.notification');
+      if (existingNotification) {
+        existingNotification.remove();
+      }
+      
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3b82f6;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-size: 0.9rem;
+        animation: fadeInOut 3s forwards;
+      `;
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeInOut {
+          0% { opacity: 0; top: 0; }
+          10% { opacity: 1; top: 20px; }
+          90% { opacity: 1; top: 20px; }
+          100% { opacity: 0; top: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      setTimeout(() => {
+        notification.remove();
+        style.remove();
+      }, 3000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFiles();
+      
+      // Search functionality
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', (e) => {
+        searchFiles(e.target.value);
+      });
+
+      // Close modal on click outside
+      document.getElementById('editModal').addEventListener('click', (e) => {
+        if (e.target.id === 'editModal') {
+          closeEditModal();
+        }
+      });
+
+      document.getElementById('deleteModal').addEventListener('click', (e) => {
+        if (e.target.id === 'deleteModal') {
+          closeDeleteModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

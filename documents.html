@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستندات - نظام مراجعة الوثائق</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #f43f5e;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background: var(--light);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        /* Simplified Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .main-container {
+            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* تنسيقات نافذة عرض الصور */
+        .images-modal .modal-content {
+            width: 95%;
+            height: 90vh;
+            max-width: 1200px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-viewer-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .image-viewer-title {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .image-viewer-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .image-viewer-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .image-viewer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .image-viewer-main {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-viewer-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .image-viewer-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .image-navigation {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            pointer-events: none;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .image-thumbnails {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            object-fit: cover;
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .thumbnail:hover:not(.active) {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* تحسين السكرول في الصور المصغرة */
+        .image-thumbnails::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .image-thumbnails::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .image-thumbnails::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            transition: transform 0.3s ease;
+            transform: scale(0.7);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* تنسيقات نافذة التعليقات */
+        .comments-container {
+            padding: 1rem;
+        }
+
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .comment-item {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .comment-text {
+            color: var(--dark);
+        }
+
+        .add-comment {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .add-comment textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .add-comment textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .admin-comment {
+            background: #f0f7ff;
+            border-right: 3px solid var(--primary);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        .loading-text {
+            color: var(--dark);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .document-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .info-card-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .info-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .document-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .document-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .document-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .document-title i {
+            color: var(--primary);
+        }
+
+        .document-content {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .document-thumbnail {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .document-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .document-details {
+            flex: 1;
+        }
+
+        .document-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .comment-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .status-approved {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .status-rejected {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .no-document {
+            text-align: center;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .no-document h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .no-document p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* تنسيقات عارض الصور المدمج */
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .gallery-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .gallery-image:hover {
+            transform: translateY(-5px);
+        }
+        
+        .gallery-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* تنسيقات قسم التعليقات المدمج */
+        .comments-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+        
+        .comments-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .comments-header i {
+            color: var(--primary);
+        }
+        
+        /* تنسيقات الصور في التعليقات */
+        .comment-image {
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        
+        .comment-image img {
+            width: 100%;
+            max-width: 200px;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .comment-image img:hover {
+            transform: scale(1.02);
+        }
+        
+        .back-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simplified Navigation -->
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <i class="fas fa-home"></i> لوحة التحكم
+        </div>
+        <div class="nav-menu">
+            <a href="admin-panel.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="users.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>المستخدمون</span>
+            </a>
+            <a href="all-documents.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>المستندات</span>
+            </a>
+            <a href="upload-pdf.html" class="nav-item">
+                <i class="fas fa-upload"></i>
+                <span>رفع ملف</span>
+            </a>
+            <a href="file-management.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>إدارة الملفات</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div id="documentDetailsContainer">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">جاري تحميل تفاصيل المستند...</p>
+        </div>
+    </div>
+
+    <!-- نافذة عرض الصور -->
+    <!-- Removed the modal images viewer as it's not working properly -->
+    
+    <!-- نافذة التعليقات -->
+    <!-- Removed the modal comments viewer as it will be integrated directly -->
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_e0oD-74pSllN0yivBYiX-4oYbO_1PJ4",
+            authDomain: "learning-8f044.firebaseapp.com",
+            databaseURL: "https://learning-8f044-default-rtdb.firebaseio.com",
+            projectId: "learning-8f044",
+            storageBucket: "learning-8f044.firebasestorage.app",
+            messagingSenderId: "453828841732",
+            appId: "1:453828841732:web:99226149b359d41df64051",
+            measurementId: "G-SCSBHBQM08"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // متغيرات عامة لمعرض الصور
+        let currentImages = [];
+        let currentImageIndex = 0;
+        let currentZoom = 1;
+        let currentRotation = 0;
+        let currentDocumentData = null;
+
+        // دالة التنقل بين الصفحات
+        window.navigateTo = function(page) {
+            window.location.href = page;
+        };
+
+        // دالة تحميل تفاصيل المستند
+        async function loadDocumentDetails() {
+            const documentDetailsContainer = document.getElementById('documentDetailsContainer');
+            
+            // الحصول على معلومات المستند من التخزين المحلي
+            const documentInfo = JSON.parse(localStorage.getItem('selectedDocument'));
+            
+            if (!documentInfo) {
+                documentDetailsContainer.innerHTML = `
+                    <div class="no-document">
+                        <h3>لم يتم تحديد مستند</h3>
+                        <p>يرجى العودة إلى تفاصيل المستخدم لاختيار مستند</p>
+                        <button class="action-btn back-btn" onclick="navigateTo('user-details.html')">
+                            <i class="fas fa-arrow-right"></i>
+                            العودة إلى تفاصيل المستخدم
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const { uid, section, docId } = documentInfo;
+            currentDocumentData = documentInfo;
+
+            try {
+                // تحميل معلومات المستخدم
+                const userRef = ref(db, `users/${uid}`);
+                const userSnapshot = await get(userRef);
+                const user = userSnapshot.val();
+
+                // تحميل معلومات المستند
+                const docRef = ref(db, `users/${uid}/images/${section}/${docId}`);
+                const docSnapshot = await get(docRef);
+                const doc = docSnapshot.val();
+
+                if (!doc) {
+                    documentDetailsContainer.innerHTML = `
+                        <div class="no-document">
+                            <h3>المستند غير موجود</h3>
+                            <p>المستند المطلوب غير متوفر</p>
+                            <button class="action-btn back-btn" onclick="navigateTo('user-details.html')">
+                                <i class="fas fa-arrow-right"></i>
+                                العودة إلى تفاصيل المستخدم
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // جمع الصور من المستند
+                const images = [];
+                for (let key in doc) {
+                    if (!isNaN(key) && doc[key]) {
+                        images.push(doc[key]);
+                    }
+                }
+
+                // تحميل التعليقات
+                const commentsRef = ref(db, `users/${uid}/images/${section}/${docId}/comments`);
+                const commentsSnapshot = await get(commentsRef);
+                const comments = commentsSnapshot.val() || {};
+
+                documentDetailsContainer.innerHTML = `
+                    <div class="back-navigation">
+                        <button class="action-btn back-btn" onclick="navigateTo('user-details.html')">
+                            <i class="fas fa-arrow-right"></i>
+                            العودة إلى تفاصيل المستخدم
+                        </button>
+                        <h2>تفاصيل المستند</h2>
+                        <div></div> <!-- Empty div for spacing -->
+                    </div>
+                    
+                    <div class="document-info-grid">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <div class="info-card-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h3 class="info-card-title">معلومات المستخدم</h3>
+                            </div>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">الاسم</span>
+                                    <span class="info-value">
+                                        <span class="user-link" style="color: #3b82f6; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${uid}')">${user.name}</span>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">ال institute</span>
+                                    <span class="info-value">${user.institute}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">الإدارة</span>
+                                    <span class="info-value">${user.administration}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <div class="info-card-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3 class="info-card-title">معلومات المستند</h3>
+                            </div>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">القسم</span>
+                                    <span class="info-value">${getSectionTitle(section)}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">القسم الفرعي</span>
+                                    <span class="info-value">${doc.subsection || 'غير محدد'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">القسم الفرعي الثاني</span>
+                                    <span class="info-value">${doc.subSubsection || 'غير محدد'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="document-section">
+                        <div class="document-header">
+                            <h3 class="document-title">
+                                <i class="fas fa-file-alt"></i>
+                                تفاصيل المستند
+                            </h3>
+                        </div>
+                        <div class="document-content">
+                            <div class="document-thumbnail">
+                                <img src="${images[0] || ''}" alt="صورة المستند">
+                            </div>
+                            <div class="document-details">
+                                <h3>${doc.title || 'مستند بدون عنوان'}</h3>
+                                <div class="document-info">
+                                    <div class="info-item">
+                                        <span class="info-label">تاريخ الرفع</span>
+                                        <span class="info-value">${new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">عدد الصور</span>
+                                        <span class="info-value">${images.length} صورة</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">الحالة</span>
+                                        <span class="status-badge status-${doc.status || 'pending'}">
+                                            <i class="fas fa-${getStatusIcon(doc.status)}"></i>
+                                            ${getStatusText(doc.status)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="document-actions">
+                                    ${doc.status !== 'approved' ? `
+                                        <button class="action-btn approve-btn" onclick="updateStatus('approved')">
+                                            <i class="fas fa-check"></i>
+                                            موافقة
+                                        </button>
+                                    ` : ''}
+                                    ${doc.status !== 'rejected' ? `
+                                        <button class="action-btn reject-btn" onclick="updateStatus('rejected')">
+                                            <i class="fas fa-times"></i>
+                                            رفض
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- معرض الصور المدمج -->
+                    <div id="imageGallery" class="document-section">
+                        <div class="document-header">
+                            <h3 class="document-title">
+                                <i class="fas fa-images"></i>
+                                معرض الصور
+                            </h3>
+                        </div>
+                        <div class="image-gallery" id="imageGalleryContainer">
+                            ${images.map((url, index) => `
+                                <div class="gallery-image">
+                                    <img src="${url}" alt="صورة ${index + 1}" onclick="showFullScreenImage('${url}')">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- قسم التعليقات المدمج -->
+                    <div class="comments-section">
+                        <div class="comments-header">
+                            <i class="fas fa-comments"></i>
+                            <h3>التعليقات</h3>
+                        </div>
+                        <div id="commentsList" class="comments-list">
+                            <!-- سيتم عرض التعليقات هنا -->
+                        </div>
+                        <div class="add-comment">
+                            <textarea id="commentInput" placeholder="اكتب تعليقك هنا..." rows="3"></textarea>
+                            <button onclick="addComment()" class="action-btn comment-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                إضافة تعليق
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // عرض التعليقات
+                renderComments(comments);
+            } catch (error) {
+                console.error('Error loading document details:', error);
+                documentDetailsContainer.innerHTML = `
+                    <div class="no-document">
+                        <h3>حدث خطأ في تحميل تفاصيل المستند</h3>
+                        <p>${error.message}</p>
+                        <button class="action-btn back-btn" onclick="navigateTo('user-details.html')">
+                            <i class="fas fa-arrow-right"></i>
+                            العودة إلى تفاصيل المستخدم
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // دالة عرض التعليقات
+        function renderComments(comments) {
+            const commentsList = document.getElementById('commentsList');
+            
+            if (Object.keys(comments).length === 0) {
+                commentsList.innerHTML = '<p class="no-comments">لا توجد تعليقات</p>';
+                return;
+            }
+
+            commentsList.innerHTML = Object.entries(comments)
+                .sort(([,a], [,b]) => a.timestamp - b.timestamp)
+                .map(([key, comment]) => {
+                    // التحقق مما إذا كان التعليق يحتوي على صور
+                    let commentContent = comment.text;
+                    if (comment.images && Array.isArray(comment.images)) {
+                        comment.images.forEach(imageUrl => {
+                            commentContent += `<div class="comment-image"><img src="${imageUrl}" alt="صورة التعليق" onclick="showFullScreenImage('${imageUrl}')" /></div>`;
+                        });
+                    }
+                    
+                    return `
+                        <div class="comment-item ${comment.isAdmin ? 'admin-comment' : ''}">
+                            <div class="comment-header">
+                                <span>${comment.isAdmin ? 'المشرف' : 'المستخدم'}</span>
+                                <span>${new Date(comment.timestamp).toLocaleString('ar-EG')}</span>
+                            </div>
+                            <div class="comment-text">${commentContent}</div>
+                        </div>
+                    `;
+                }).join('');
+            
+            // تحريك السكرول إلى آخر التعليقات
+            commentsList.scrollTop = commentsList.scrollHeight;
+        }
+        
+        // دالة تبديل عرض معرض الصور
+        window.toggleImageGallery = function() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.style.display = gallery.style.display === 'none' ? 'block' : 'none';
+        };
+        
+        // دالة عرض الصورة بحجم كامل (للمعاينة)
+        window.showFullScreenImage = function(imageUrl) {
+            // إنشاء نافذة مشاهدة الصور المدمجة داخل الموقع
+            const modal = document.createElement('div');
+            modal.id = 'imagePreviewModal';
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="background: #1a1a1a; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; width: 95%; height: 90vh; max-width: 1200px;">
+                    <div class="image-viewer-header" style="background: rgba(255, 255, 255, 0.1); padding: 1rem; display: flex; justify-content: space-between; align-items: center; color: white;">
+                        <h3 class="image-viewer-title" style="font-size: 1.2rem; margin: 0;">
+                            <i class="fas fa-search-plus"></i>
+                            معاينة الصورة
+                        </h3>
+                        <div class="image-viewer-controls" style="display: flex; gap: 0.5rem;">
+                            <button class="image-viewer-btn" onclick="closeImagePreview()" title="إغلاق" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="image-viewer-main" style="flex: 1; display: flex; position: relative; overflow: hidden;">
+                        <div class="image-viewer-container" style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <img id="previewImage" src="${imageUrl}" alt="معاينة الصورة" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        
+        // دالة إغلاق معاينة الصورة
+        window.closeImagePreview = function() {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal) {
+                modal.remove();
+            }
+        };
+
+        // دالة إضافة تعليق
+        window.addComment = async function() {
+            const commentInput = document.getElementById('commentInput');
+            const text = commentInput.value.trim();
+            
+            if (!text || !currentDocumentData) return;
+
+            const { uid, section, docId } = currentDocumentData;
+            
+            try {
+                const commentsRef = ref(db, `users/${uid}/images/${section}/${docId}/comments`);
+                const newComment = {
+                    text,
+                    timestamp: Date.now(),
+                    isAdmin: true
+                };
+
+                const newCommentRef = await push(commentsRef, newComment);
+
+                // تحديث واجهة المستخدم مباشرة
+                const commentsList = document.getElementById('commentsList');
+                // إزالة رسالة "لا توجد تعليقات" إذا كانت موجودة
+                if (commentsList.querySelector('.no-comments')) {
+                    commentsList.innerHTML = '';
+                }
+                
+                // التحقق مما إذا كان التعليق يحتوي على صور
+                let commentContent = newComment.text;
+                if (newComment.images && Array.isArray(newComment.images)) {
+                    newComment.images.forEach(imageUrl => {
+                        commentContent += `<div class="comment-image"><img src="${imageUrl}" alt="صورة التعليق" onclick="showFullScreenImage('${imageUrl}')" /></div>`;
+                    });
+                }
+                
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment-item admin-comment';
+                commentElement.innerHTML = `
+                    <div class="comment-header">
+                        <span>المشرف</span>
+                        <span>${new Date(newComment.timestamp).toLocaleString('ar-EG')}</span>
+                    </div>
+                    <div class="comment-text">${commentContent}</div>
+                `;
+                commentsList.appendChild(commentElement);
+                commentsList.scrollTop = commentsList.scrollHeight;
+
+                commentInput.value = '';
+                showToast('تم إضافة التعليق بنجاح');
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                showToast('حدث خطأ في إضافة التعليق', true);
+            }
+        };
+
+        // دالة تحديث الحالة
+        window.updateStatus = async function(newStatus) {
+            try {
+                const { uid, section, docId } = currentDocumentData;
+                const docRef = ref(db, `users/${uid}/images/${section}/${docId}`);
+                await update(docRef, { status: newStatus });
+                
+                showToast(newStatus === 'approved' 
+                    ? 'تم الموافقة على المستند بنجاح' 
+                    : 'تم رفض المستند بنجاح'
+                );
+                
+                // إعادة تحميل تفاصيل المستند
+                loadDocumentDetails();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('حدث خطأ أثناء تحديث حالة المستند', true);
+            }
+        };
+
+        // دالة عرض ملف المستخدم
+        window.viewUserProfile = function(userId) {
+            localStorage.setItem('selectedUserId', userId);
+            window.location.href = 'user-details.html';
+        };
+
+        // Helper Functions
+        function getSectionTitle(section) {
+            const titles = {
+                'hierarchy': 'الوثائق',
+                'leadership-meetings': 'اجتماعات القيادة',
+                'supervisor-meetings': 'اجتماعات المشرفين',
+                'family-meetings': 'اجتماعات الأسر',
+                'social-specialist': 'الأخصائي الاجتماعي',
+                'librarian': 'أمين المكتبة',
+                'sports': 'سجل التربية الرياضية',
+                'general-photos': 'صور عامة ولوحات المعهد',
+                'results': 'النتيجة',
+                'attendance': 'الغياب',
+                'domains': 'المجالات',
+                'notes': 'الملاحظات',
+                'training': 'وحدة التدريب',
+                'committees': 'اللجان',
+                'health-visitor': 'توثيق أنشطة الزائرة الصحية',
+                'broadcast': 'الإذاعة',
+                'curriculum-maps': 'خرائط المنهج',
+                'teacher-record': 'سجل المعلم',
+                'special-needs': 'سجل ذوي الاحتياجات الخاصة',
+                'science-lab': 'معمل العلوم',
+                'maintenance': 'سجل المتابعة والصيانة',
+                'student-affairs': 'شؤون الطلبة',
+                'institution-context': 'سياق المؤسسة',
+                'staff-affairs': 'شؤون العاملين',
+                'remedial-programs': 'البرامج العلاجية',
+                'library': 'أمين المكتبة',
+                'complaints': 'لجنة الشكاوي والمقترحات',
+                'computer-lab': 'معمل الحاسب',
+                'reward-committee': 'لجنة الأثابة والتقويم',
+                'preparation-books':' دفاتر التحضير',
+                'hope-peace-committee': 'لجنة الأمل والسلام'
+            };
+            return titles[section] || section;
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'pending': 'clock',
+                'approved': 'check-circle',
+                'rejected': 'times-circle'
+            };
+            return icons[status] || 'clock';
+        }
+
+        function getStatusText(status) {
+            const statusTexts = {
+                'pending': 'قيد المراجعة',
+                'approved': 'تمت الموافقة',
+                'rejected': 'مرفوض'
+            };
+            return statusTexts[status] || 'قيد المراجعة';
+        }
+
+        function showToast(message, isError = false) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                className: isError ? "toast-error" : "toast-success",
+                stopOnFocus: true
+            }).showToast();
+        }
+
+        // تحميل تفاصيل المستند عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDocumentDetails();
+        });
+    </script>
+</body>
+</html>
