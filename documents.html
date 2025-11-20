@@ -982,6 +982,10 @@
         
         // دالة عرض الصورة بحجم كامل (للمعاينة)
         window.showFullScreenImage = function(imageUrl) {
+            // جمع جميع الصور من المعرض
+            const galleryImages = Array.from(document.querySelectorAll('.gallery-image img')).map(img => img.src);
+            const currentIndex = galleryImages.indexOf(imageUrl);
+            
             // إنشاء نافذة مشاهدة الصور المدمجة داخل الموقع
             const modal = document.createElement('div');
             modal.id = 'imagePreviewModal';
@@ -1003,10 +1007,50 @@
                         <div class="image-viewer-container" style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative;">
                             <img id="previewImage" src="${imageUrl}" alt="معاينة الصورة" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease;">
                         </div>
+                        
+                        <!-- أزرار التنقل -->
+                        <div class="image-navigation" style="position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 1rem; pointer-events: none;">
+                            <button class="nav-btn" id="prevBtn" onclick="navigateImage(-1)" title="الصورة السابقة" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 50px; height: 50px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.3s ease;" ${currentIndex <= 0 ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="nav-btn" id="nextBtn" onclick="navigateImage(1)" title="الصورة التالية" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 50px; height: 50px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.3s ease;" ${currentIndex >= galleryImages.length - 1 ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- أزرار التحكم -->
+                    <div class="image-controls" style="background: rgba(255, 255, 255, 0.1); padding: 1rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                        <button class="image-viewer-btn" onclick="zoomImage(0.1)" title="تكبير" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="image-viewer-btn" onclick="zoomImage(-0.1)" title="تصغير" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="image-viewer-btn" onclick="rotateImage(90)" title="تدوير يمين" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="image-viewer-btn" onclick="rotateImage(-90)" title="تدوير يسار" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="image-viewer-btn" onclick="resetImage()" title="إعادة تعيين" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- شريط تقدم الصور -->
+                    <div class="image-progress" style="background: rgba(255, 255, 255, 0.1); padding: 0.5rem 1rem; display: flex; justify-content: center; align-items: center; color: white; font-size: 0.9rem;">
+                        <span id="imageCounter">${currentIndex + 1} من ${galleryImages.length}</span>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
+            
+            // تخزين معلومات الصور في الذاكرة
+            window.currentGalleryImages = galleryImages;
+            window.currentImageIndex = currentIndex;
+            window.currentZoom = 1;
+            window.currentRotation = 0;
         };
         
         // دالة إغلاق معاينة الصورة
@@ -1014,6 +1058,83 @@
             const modal = document.getElementById('imagePreviewModal');
             if (modal) {
                 modal.remove();
+            }
+            // إعادة تعيين المتغيرات
+            window.currentGalleryImages = null;
+            window.currentImageIndex = 0;
+            window.currentZoom = 1;
+            window.currentRotation = 0;
+        };
+        
+        // دالة التنقل بين الصور
+        window.navigateImage = function(direction) {
+            if (!window.currentGalleryImages) return;
+            
+            const newIndex = window.currentImageIndex + direction;
+            
+            // التحقق من حدود المصفوفة
+            if (newIndex < 0 || newIndex >= window.currentGalleryImages.length) return;
+            
+            // تحديث الفهرس الحالي
+            window.currentImageIndex = newIndex;
+            
+            // تحديث الصورة المعروضة
+            const previewImage = document.getElementById('previewImage');
+            if (previewImage) {
+                previewImage.src = window.currentGalleryImages[newIndex];
+                
+                // إعادة تعيين التحويلات
+                window.currentZoom = 1;
+                window.currentRotation = 0;
+                previewImage.style.transform = 'scale(1) rotate(0deg)';
+                
+                // تحديث أزرار التنقل
+                document.getElementById('prevBtn').disabled = newIndex <= 0;
+                document.getElementById('nextBtn').disabled = newIndex >= window.currentGalleryImages.length - 1;
+                
+                // تحديث عداد الصور
+                document.getElementById('imageCounter').textContent = `${newIndex + 1} من ${window.currentGalleryImages.length}`;
+            }
+        };
+        
+        // دالة التكبير والتصغير
+        window.zoomImage = function(delta) {
+            if (!window.currentGalleryImages) return;
+            
+            window.currentZoom += delta;
+            
+            // تحديد الحدود الدنيا والقصوى للتكبير
+            if (window.currentZoom < 0.1) window.currentZoom = 0.1;
+            if (window.currentZoom > 5) window.currentZoom = 5;
+            
+            const previewImage = document.getElementById('previewImage');
+            if (previewImage) {
+                previewImage.style.transform = `scale(${window.currentZoom}) rotate(${window.currentRotation}deg)`;
+            }
+        };
+        
+        // دالة تدوير الصورة
+        window.rotateImage = function(degrees) {
+            if (!window.currentGalleryImages) return;
+            
+            window.currentRotation += degrees;
+            
+            const previewImage = document.getElementById('previewImage');
+            if (previewImage) {
+                previewImage.style.transform = `scale(${window.currentZoom}) rotate(${window.currentRotation}deg)`;
+            }
+        };
+        
+        // دالة إعادة تعيين الصورة
+        window.resetImage = function() {
+            if (!window.currentGalleryImages) return;
+            
+            window.currentZoom = 1;
+            window.currentRotation = 0;
+            
+            const previewImage = document.getElementById('previewImage');
+            if (previewImage) {
+                previewImage.style.transform = 'scale(1) rotate(0deg)';
             }
         };
 
